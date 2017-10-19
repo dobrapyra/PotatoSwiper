@@ -36,6 +36,16 @@ if( !Object.assign ) {
   }
 }
 
+if( !Function.prototype.bind ) {
+  Function.prototype.bind = function( ctx ) {
+    var fn = this, args = Array.prototype.slice.call( arguments, 1 )
+
+    return function() {
+      fn.apply( ctx, args )
+    }
+  }
+}
+
 if( !Element.prototype.matches ) {
   var elPrototype = Element.prototype
   elPrototype.matches = ( function() {
@@ -55,5 +65,31 @@ if( !Element.prototype.matches ) {
 
         return false
       }
+  } )()
+}
+
+if( !window.requestAnimationFrame ) {
+  var w = window
+  w.requestAnimationFrame = ( function() {
+    return w.requestAnimationFrame ||
+      w.webkitRequestAnimationFrame ||
+      w.mozRequestAnimationFrame ||
+      w.oRequestAnimationFrame ||
+      w.msRequestAnimationFrame ||
+      function( cb ) {
+        return w.setTimeout( cb, 1000 / 60 )
+      }
+  } )()
+}
+
+if( !window.cancelAnimationFrame ) {
+  var w = window
+  w.cancelAnimationFrame = ( function() {
+    return w.cancelAnimationFrame ||
+      w.webkitCancelRequestAnimationFrame ||
+      w.mozCancelRequestAnimationFrame ||
+      w.oCancelRequestAnimationFrame ||
+      w.msCancelRequestAnimationFrame ||
+      clearTimeout
   } )()
 }

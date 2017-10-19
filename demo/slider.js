@@ -10,6 +10,8 @@ ready( function() {
 
   window['psSlider'] = new PotatoSlider( document.querySelector( '.slider' ), {
     loop: true,
+    prevSelector: '.slider__nav--prev',
+    nextSelector: '.slider__nav--next',
     autoWidth: true
     // items: 3,
     // perItem: 2

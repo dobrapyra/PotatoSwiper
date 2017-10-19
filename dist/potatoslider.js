@@ -36,6 +36,16 @@ if( !Object.assign ) {
   }
 }
 
+if( !Function.prototype.bind ) {
+  Function.prototype.bind = function( ctx ) {
+    var fn = this, args = Array.prototype.slice.call( arguments, 1 )
+
+    return function() {
+      fn.apply( ctx, args )
+    }
+  }
+}
+
 if( !Element.prototype.matches ) {
   var elPrototype = Element.prototype
   elPrototype.matches = ( function() {
@@ -58,37 +68,92 @@ if( !Element.prototype.matches ) {
   } )()
 }
 
+if( !window.requestAnimationFrame ) {
+  var w = window
+  w.requestAnimationFrame = ( function() {
+    return w.requestAnimationFrame ||
+      w.webkitRequestAnimationFrame ||
+      w.mozRequestAnimationFrame ||
+      w.oRequestAnimationFrame ||
+      w.msRequestAnimationFrame ||
+      function( cb ) {
+        return w.setTimeout( cb, 1000 / 60 )
+      }
+  } )()
+}
+
+if( !window.cancelAnimationFrame ) {
+  var w = window
+  w.cancelAnimationFrame = ( function() {
+    return w.cancelAnimationFrame ||
+      w.webkitCancelRequestAnimationFrame ||
+      w.mozCancelRequestAnimationFrame ||
+      w.oCancelRequestAnimationFrame ||
+      w.msCancelRequestAnimationFrame ||
+      clearTimeout
+  } )()
+}
+
 /**
  * PotatoSlider Core
+ * Author dobrapyra (Michał Zieliński)
  */
 
 var PotatoSlider = function( rootEl, cfg ) { this.preInit( rootEl, cfg ) }
-
 PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
 
   preInit: function( rootEl, cfg ) {
-    rootEl.PotatoSlider = this
+    var _this = this
 
-    this._rootEl = rootEl
-    this._itemsArr = this._getItemsArr( rootEl )
+    rootEl.PotatoSlider = _this
 
-    this._cfg = Object.assign( {
+    _this._rootEl = rootEl
+    _this._itemsArr = _this._getItemsArr( rootEl )
+
+    _this._cfg = Object.assign( {
       nameSpace: 'potatoSlider',
       autoInit: true,
       loop: true,
       items: 1,
       perItem: 1,
       autoWidth: false,
+      prevSelector: '[data-ps-prev]',
+      nextSelector: '[data-ps-next]',
+      gap: 0,
       largeSize: 2,
       largeSelector: '[data-ps-large]'
     }, cfg )
 
-    if( this._cfg.autoWidth ) this._cfg = Object.assign( this._cfg, {
+    if( _this._cfg.autoWidth ) _this._cfg = Object.assign( _this._cfg, {
       items: 1,
-      perItem: 1
+      perItem: 1,
+      largeSize: 1
     } )
 
-    if( this._cfg.autoInit ) this.init()
+    _this._currIdx = 0
+
+    _this._move = {
+      d: 0, // diff
+      b: null // begin
+    }
+
+    _this._lastTarget = null
+
+    _this._inLoop = false
+    _this._raf = null
+    _this._fReady = true
+
+    _this._time = {
+      d: 0, // diff
+      b: 0, // begin
+      e: 0 // end
+    }
+    _this._posX = {
+      b: 0, // begin
+      e: 0 // end
+    }
+
+    if( _this._cfg.autoInit ) _this.init()
   },
 
   _getItemsArr: function( rootEl ) {
@@ -105,41 +170,45 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
 
   init: function() {
     this._prepareHtml()
+    this._getNav()
     this._bindEvents()
   },
 
   _prepareHtml: function() {
-    var cfg = this._cfg,
-      rootEl = this._rootEl,
-      itemsArr = this._itemsArr,
+    var _this = this,
+      cfg = _this._cfg,
+      rootEl = _this._rootEl,
+      itemsArr = _this._itemsArr,
       i = 0, l = itemsArr.length,
       itemEl, psItem,
       itemElW, psItemW,
       rootW, allW = 0,
-      itemsCount = 0
+      itemsCount = 0,
+      itemSize,
+      psRoot, psWrap, psItems, psItemsArr
 
-    this._psItemsArr = []
+    psItemsArr = []
 
-    this._setStyle( rootEl, {
+    _this._setStyle( rootEl, {
       overflow: 'hidden',
       height: 0
     } )
 
     rootW = rootEl.getBoundingClientRect().width
 
-    this._psRoot = this._createEl( 'div', '', {
+    psRoot = _this._createEl( 'div', '', {
       position: 'relative'
     } )
 
-    this._psWrap = this._createEl( 'div', '__wrap', {
+    psWrap = _this._createEl( 'div', '__wrap', {
       position: 'relative',
       overflow: 'hidden'
-    }, this._psRoot )
+    }, psRoot )
 
-    this._psItems = this._createEl( 'div', '__items', {
+    psItems = _this._createEl( 'div', '__items', {
       position: 'relative'
-    }, this._psWrap )
-    
+    }, psWrap )
+
     for( i = 0; i < l; i++ ) {
       itemEl = itemsArr[ i ]
 
@@ -152,20 +221,22 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       }
 
       if( itemsCount % cfg.perItem === 0 ) {
-        psItem = this._createEl( 'div', '__item', {
+        psItem = _this._createEl( 'div', '__item', {
           position: 'relative',
           display: 'inline-block',
           verticalAlign: 'middle',
           top: 0,
           left: 0,
           width: psItemW + 'px'
-        }, this._psItems )
+        }, psItems )
 
-        this._psItemsArr.push( psItem )
+        psItemsArr.push( psItem )
+        psItem.PotatoSlider = { items: 0 }
+
         allW += psItemW
       }
 
-      this._setStyle( itemEl, {
+      _this._setStyle( itemEl, {
         position: 'relative',
         top: 0,
         left: 0,
@@ -174,23 +245,38 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       } )
       psItem.appendChild( itemEl )
 
-      if( this._isLarge( itemEl ) ) {
-        itemsCount += 2
-      } else {
-        itemsCount++
-      }
+      itemSize = _this._isLarge( itemEl ) ? cfg.largeSize : 1
+
+      itemsCount += itemSize
+      psItem.PotatoSlider.items += itemSize
     }
 
-    this._setStyle( this._psItems, {
+    psItems._PotatoSlider = { x: 0 }
+
+    _this._setStyle( psItems, {
       width: allW + 'px'
     } )
 
-    this._setStyle( rootEl, {
+    _this._setStyle( rootEl, {
       overflow: '',
       height: ''
     } )
 
-    this._rootEl.appendChild( this._psRoot )
+    rootEl.appendChild( psRoot )
+
+    _this._psItemsArr = psItemsArr
+    _this._psItems = psItems
+    _this._psWrap = psWrap
+    _this._psRoot = psRoot
+  },
+
+  _getNav: function() {
+    var _this = this,
+      getEl = _this._getEl,
+      cfg = _this._cfg
+    
+    _this._navPrev = getEl( cfg.prevSelector )
+    _this._navNext = getEl( cfg.nextSelector )
   },
 
   _isLarge: function( itemEl ) {
@@ -198,19 +284,112 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
   },
 
   _bindEvents: function() {
-    var _this = this
+    var _this = this,
+      addEvent = _this._addEvent.bind( _this ),
+      navPrev = _this._navPrev,
+      navNext = _this._navNext,
+      resizeTimeout = _this._resizeTimeout
 
-    this._addEvent( window, 'resize', function(){
+    if( navPrev ) addEvent( navPrev, 'click', function( e ) {
+      e.preventDefault()
+      _this.prev()
+    } )
 
-      clearTimeout( _this._resizeTimeout )
-      _this._resizeTimeout = setTimeout( function(){
+    if( navNext ) addEvent( navNext, 'click', function( e ) {
+      e.preventDefault()
+      _this.next()
+    } )
+
+    addEvent( _this._psItems, 'mousedown', function( e ) {
+      e.preventDefault()
+      _this._bindDocMouseEvents()
+      _this._moveBegin( e )
+    } )
+
+    addEvent( _this._psItems, 'touchstart', function( e ) {
+      _this._bindDocTouchEvents()
+      _this._moveBegin( e )
+    } )
+
+    addEvent( window, 'resize', function() {
+      clearTimeout( resizeTimeout )
+      resizeTimeout = setTimeout( function() {
         _this.refresh()
       }, 200 )
     } )
   },
 
   _unbindEvents: function() {
-    this._removeEvent( window, 'resize' )
+    var _this = this,
+      remEvent = _this._remEvent
+
+    remEvent( _this._navPrev, 'click' )
+
+    remEvent( _this._navNext, 'click' )
+
+    remEvent( _this._psItems, 'mousedown' )
+
+    remEvent( _this._psItems, 'touchstart' )
+
+    remEvent( window, 'resize' )
+  },
+
+  _bindDocMouseEvents: function() {
+    var _this = this,
+      addEvent = _this._addEvent.bind( _this ),
+      doc = document
+
+    addEvent( doc, 'mousemove', function( e ) {
+      _this._moveUpdate( e )
+    } )
+
+    addEvent( doc, 'mouseup', function( e ) {
+      _this._unbindDocMouseEvents()
+      _this._moveEnd( e )
+    } )
+
+    addEvent( doc, 'mouseleave', function( e ) {
+      console.log( 'leave' )
+      _this._unbindDocMouseEvents()
+      _this._moveEnd( e )
+    } )
+  },
+
+  _unbindDocMouseEvents: function() {
+    var _this = this,
+      remEvent = _this._remEvent.bind( _this ),
+      doc = document
+
+    remEvent( doc, 'mousemove' )
+
+    remEvent( doc, 'mouseup' )
+
+    remEvent( doc, 'mouseleave' )
+  },
+
+  _bindDocTouchEvents: function() {
+    var _this = this,
+      addEvent = _this._addEvent.bind( _this ),
+      doc = document
+
+    addEvent( doc, 'touchmove', function( e ) {
+      _this._moveUpdate( e )
+    } )
+
+    addEvent( doc, 'touchend', function( e ) {
+      _this._unbindDocTouchEvents()
+      _this._moveEnd( e )
+    } )
+  },
+
+  _unbindDocTouchEvents: function() {
+    var _this = this,
+      remEvent = _this._remEvent.bind( _this ),
+      doc = document
+
+    remEvent( doc, 'touchmove' )
+
+    remEvent( doc, 'touchend' )
   },
 
   refresh: function() {
@@ -220,32 +399,29 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
 
   _addEvent: function( el, eventName, fn ) {
     el._psEvents = el._psEvents || {}
-    if( el._psEvents[ eventName ] ) this._removeEvent( el, eventName )
+    if( el._psEvents[ eventName ] ) this._remEvent( el, eventName )
 
     el._psEvents[ eventName ] = fn
 
     el.addEventListener( eventName, el._psEvents[ eventName ] )
   },
-  
-  _removeEvent: function( el, eventName ) {
-    if( !el._psEvents || el._psEvents[ eventName ] ) return
+
+  _remEvent: function( el, eventName ) {
+    if( !el._psEvents || !el._psEvents[ eventName ] ) return
 
     el.removeEventListener( eventName, el._psEvents[ eventName ] )
   },
 
-  next: function() {
-
-  },
-
-  prev: function() {
-
+  _getEl: function( selector, relEl ) {
+    return ( relEl || document ).querySelector( selector )
   },
 
   _createEl: function( selector, elClassSuffix, styleObj, parentEl ) {
-    var el = document.createElement( selector )
+    var _this = this,
+      el = document.createElement( selector )
 
-    el.setAttribute( 'class', this._cfg.nameSpace + elClassSuffix )
-    this._setStyle( el, styleObj )
+    el.setAttribute( 'class', _this._cfg.nameSpace + elClassSuffix )
+    _this._setStyle( el, styleObj )
 
     if( parentEl ) parentEl.appendChild( el )
 
@@ -264,15 +440,153 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     }
   },
 
+  _moveBegin: function( e ) {
+    var _this = this,
+      rootStyle = _this._rootEl.style,
+      touch = e.touch || ( e.touches ? e.touches[ 0 ] : false )
+
+    // _this._lastTarget = e.target.closest( 'a[href], button' )
+
+    _this._move.b = touch ? touch.clientX : e.clientX
+
+    rootStyle.userSelect = 'none'
+    rootStyle.pointerEvents = 'none'
+  },
+
+  _moveUpdate: function( e ) {
+    var _this = this,
+      touch = e.touch || ( e.touches ? e.touches[ 0 ] : false )
+
+    if( _this._move.b === null ) return
+
+    _this._move.d = touch ? touch.clientX - _this._move.b : e.clientX - _this._move.b
+
+    _this._updatePos( _this._move.d )
+  },
+
+  _moveEnd: function() {
+    var _this = this,
+      rootStyle = _this._rootEl.style,
+      dir = ( _this._move.d > _this._treashold ) ? 1 : ( _this._move.d < -_this._treashold ) ? -1 : 0
+
+    _this._move.b = null
+    // _this._move.d = 0
+
+    rootStyle.userSelect = ''
+    rootStyle.pointerEvents = ''
+
+    if( dir !== 0 ) {
+      if( dir < 0 ) {
+        _this.next()
+      } else {
+        _this.prev()
+      }
+    } else {
+      // if( _this._lastTarget ) {
+      //   _this._lastTarget.click()
+      //   _this._lastTarget = null
+      // }
+      _this._alignPos()
+    }
+  },
+
+  _updatePos: function( x ) {
+    this._psItems.style.transform = 'matrix(1,0,0,1,' + x +  ',0)'
+  },
+
+  _alignPos: function() {
+    // _this._psItems.style.transform = ''
+    this._animX( 0, 600 )
+  },
+
+  _animX: function( x, duration ) {
+    var _this = this,
+      time = _this._time,
+      posX = _this._posX
+
+    time.b = window.performance.now()
+    time.e = time.b + duration
+    time.d = duration
+    posX.b = _this._move.d
+    posX.e = x
+
+    _this._startLoop()
+  },
+
+  _loop: function() {
+    var _this = this,
+      fReady = _this._fReady
+
+    _this._setRaf( function() { _this._loop() } )
+    if( !fReady ) return
+
+    fReady = false
+    _this._update( window.performance.now() )
+    fReady = true
+  },
+
+  _startLoop: function() {
+    var _this = this
+
+    if( _this._inLoop ) return
+
+    _this._inLoop = true
+    _this._setRaf( function() { _this._loop() } )
+  },
+
+  _stopLoop: function() {
+    var _this = this
+
+    _this._setRaf( null )
+    _this._inLoop = false
+  },
+
+  _update: function( t ) {
+    var _this = this,
+      time = _this._time,
+      fract
+
+    if( t > time.e ) { // complete
+      _this._stopLoop()
+    }
+
+    fract = ( t - time.b ) / time.d
+    if( fract < 0 ) fract = 0
+    else if( fract > 1 ) fract = 1
+    // fract = this._easing.easeOutCubic( fract )
+    // scrollTop( this._bScroll + fract * this._dScroll ) // to remove
+    _this._updatePos( ( 1 - fract ) * _this._move.d )
+  },
+
+  _setRaf: function( fn ) {
+    var _this = this
+    
+    if( fn ) {
+      _this._raf = requestAnimationFrame( fn )
+    } else {
+      cancelAnimationFrame( _this._raf )
+      _this._raf = null
+    }
+  },
+
+  next: function() {
+    console.log( 'next' )
+  },
+  
+  prev: function() {
+    console.log( 'prev' )
+  },
+
   _restoreHtml: function() {
-    var itemsArr = this._itemsArr,
+    var _this = this,
+      itemsArr = _this._itemsArr,
       i = 0, l = itemsArr.length,
-      itemEl
+      itemEl, rootEl = _this._rootEl
 
     for( ; i < l; i++ ) {
       itemEl = itemsArr[ i ]
 
-      this._setStyle( itemEl, {
+      _this._setStyle( itemEl, {
         position: '',
         top: '',
         left: '',
@@ -280,10 +594,10 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
         float: ''
       } )
 
-      this._rootEl.appendChild( itemEl )
+      rootEl.appendChild( itemEl )
     }
 
-    this._rootEl.removeChild( this._psRoot )
+    rootEl.removeChild( _this._psRoot )
   },
 
   destroy: function() {
