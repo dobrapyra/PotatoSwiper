@@ -30,7 +30,8 @@ body, html {
 
 .slider__slide {
   display: block;
-  width: 25%;
+  /* width: 25%; */
+  width: 100%;
   float: left;
   color: #fff;
   background-color: #333;
@@ -71,7 +72,7 @@ body, html {
   text-align: center;
 }
 
-@media only screen and (max-width: 768px) {
+/* @media only screen and (max-width: 768px) {
   .slider__slide {
     width: 50%;
   }
@@ -81,4 +82,4 @@ body, html {
   .slider__slide {
     width: 100%;
   }
-}
+} */

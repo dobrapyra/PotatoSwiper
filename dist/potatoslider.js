@@ -136,10 +136,12 @@ Object.assign( PotatoSlider.prototype, {
       gap: 0,
       largeSize: 2,
       largeSelector: '[data-ps-large]',
-      duration: 600,
+      duration: 600, // ms
       easing: 'easeOutCubic',
+      rwdMobileFirst: true,
       rwd: {}
     }, cfg )
+    _this._cfg = {}
 
     _this._currIdx = 0
     _this._maxIdx = 0
@@ -177,21 +179,47 @@ Object.assign( PotatoSlider.prototype, {
   },
 
   _setRWDCfg: function() {
-    var _this = this
+    var _this = this,
+      mainCfg = _this._mainCfg,
+      cfg, rwdCfg = {}, rwdArr = [],
+      bodyW = _this._getEl( 'body' ).offsetWidth,
+      i, m
 
-    _this._cfg = Object.assign( {}, _this._mainCfg, {
+    if( mainCfg.rwd ) {
+      rwdArr = Object.keys( mainCfg.rwd ) // maybe sort required
+      m = rwdArr.length - 1
+
+      for( i = 0; i <= m; i++ ) {
+        if( mainCfg.rwdMobileFirst ) {
+          if( rwdArr[ i ] <= bodyW ) {
+            rwdCfg = mainCfg.rwd[ rwdArr[ i ] ]
+          } else {
+            break
+          }
+        } else {
+          if( rwdArr[ m - i ] >= bodyW ) {
+            rwdCfg = mainCfg.rwd[ rwdArr[ m - i ] ]
+          } else {
+            break
+          }
+        }
+      }
+    }
+
+    cfg = Object.assign( {}, mainCfg, {
       rwd: {}
-    } )
+    }, rwdCfg )
 
-    if( _this._cfg.autoWidth ) Object.assign( _this._cfg, {
+    if( cfg.autoWidth ) Object.assign( cfg, {
       items: 1,
       perItem: 1,
       largeSize: 1
     } )
+
+    return _this._cfg = cfg
   },
 
   init: function() {
-    this._setRWDCfg()
     this._prepareHtml()
     this._getNav()
     this._bindEvents()
@@ -199,7 +227,9 @@ Object.assign( PotatoSlider.prototype, {
 
   _prepareHtml: function() {
     var _this = this,
-      cfg = _this._cfg,
+      cfg,
+      setStyle = _this._setStyle,
+      createEl = _this._createEl.bind( _this ),
       rootEl = _this._rootEl,
       itemsArr = _this._itemsArr,
       i = 0, l = itemsArr.length,
@@ -212,23 +242,25 @@ Object.assign( PotatoSlider.prototype, {
 
     psItemsArr = []
 
-    _this._setStyle( rootEl, {
+    setStyle( rootEl, {
       overflow: 'hidden',
       height: 0
     } )
 
+    cfg = _this._setRWDCfg()
+
     rootW = rootEl.getBoundingClientRect().width
 
-    psRoot = _this._createEl( 'div', '', {
+    psRoot = createEl( 'div', '', {
       position: 'relative'
     } )
 
-    psWrap = _this._createEl( 'div', '__wrap', {
+    psWrap = createEl( 'div', '__wrap', {
       position: 'relative',
       overflow: 'hidden'
     }, psRoot )
 
-    psItems = _this._createEl( 'div', '__items', {
+    psItems = createEl( 'div', '__items', {
       position: 'relative'
     }, psWrap )
 
@@ -244,7 +276,7 @@ Object.assign( PotatoSlider.prototype, {
       }
 
       if( itemsCount % cfg.perItem === 0 ) {
-        psItem = _this._createEl( 'div', '__item', {
+        psItem = createEl( 'div', '__item', {
           position: 'relative',
           display: 'inline-block',
           verticalAlign: 'middle',
@@ -259,7 +291,7 @@ Object.assign( PotatoSlider.prototype, {
         allW += psItemW
       }
 
-      _this._setStyle( itemEl, {
+      setStyle( itemEl, {
         position: 'relative',
         top: 0,
         left: 0,
@@ -274,11 +306,11 @@ Object.assign( PotatoSlider.prototype, {
       psItem._PotatoSlider.items += itemSize
     }
 
-    _this._setStyle( psItems, {
+    setStyle( psItems, {
       width: allW + 'px'
     } )
 
-    _this._setStyle( rootEl, {
+    setStyle( rootEl, {
       overflow: '',
       height: ''
     } )
@@ -344,7 +376,7 @@ Object.assign( PotatoSlider.prototype, {
 
   _unbindEvents: function() {
     var _this = this,
-      remEvent = _this._remEvent
+      remEvent = _this._remEvent.bind( _this )
 
     remEvent( _this._navPrev, 'click' )
 
