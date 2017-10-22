@@ -3,7 +3,7 @@
  * Author dobrapyra (Michał Zieliński)
  */
 
-PotatoSlider.prototype._easing = Object.assign( PotatoSlider.prototype._easing, {
+Object.assign( PotatoSlider.prototype._easing, {
 
   linear: function( f ) {
     return f

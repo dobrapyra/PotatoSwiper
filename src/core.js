@@ -5,7 +5,7 @@
  */
 
 var PotatoSlider = function( rootEl, cfg ) { this.preInit( rootEl, cfg ) }
-PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
+Object.assign( PotatoSlider.prototype, {
 
   _easing: {
     easeOutCubic: function( f ) {
@@ -23,7 +23,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     _this._itemsArr = _this._getItemsArr( rootEl )
 
     // default config
-    _this._cfg = Object.assign( {
+    _this._mainCfg = Object.assign( {
       nameSpace: 'potatoSlider',
       autoInit: true,
       loop: true,
@@ -35,16 +35,13 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       gap: 0,
       largeSize: 2,
       largeSelector: '[data-ps-large]',
-      easing: 'easeOutCubic'
+      duration: 600,
+      easing: 'easeOutCubic',
+      rwd: {}
     }, cfg )
 
-    if( _this._cfg.autoWidth ) _this._cfg = Object.assign( _this._cfg, {
-      items: 1,
-      perItem: 1,
-      largeSize: 1
-    } )
-
     _this._currIdx = 0
+    _this._maxIdx = 0
 
     _this._move = {
       d: 0, // diff
@@ -63,12 +60,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       e: 0 // end
     }
 
-    _this._posX = {
-      b: 0, // begin
-      e: 0 // end
-    }
-
-    if( _this._cfg.autoInit ) _this.init()
+    if( _this._mainCfg.autoInit ) _this.init()
   },
 
   _getItemsArr: function( rootEl ) {
@@ -83,7 +75,22 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     return itemsArr
   },
 
+  _setRWDCfg: function() {
+    var _this = this
+
+    _this._cfg = Object.assign( {}, _this._mainCfg, {
+      rwd: {}
+    } )
+
+    if( _this._cfg.autoWidth ) Object.assign( _this._cfg, {
+      items: 1,
+      perItem: 1,
+      largeSize: 1
+    } )
+  },
+
   init: function() {
+    this._setRWDCfg()
     this._prepareHtml()
     this._getNav()
     this._bindEvents()
@@ -146,7 +153,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
         }, psItems )
 
         psItemsArr.push( psItem )
-        psItem.PotatoSlider = { items: 0 }
+        psItem._PotatoSlider = { items: 0 }
 
         allW += psItemW
       }
@@ -163,10 +170,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       itemSize = _this._isLarge( itemEl ) ? cfg.largeSize : 1
 
       itemsCount += itemSize
-      psItem.PotatoSlider.items += itemSize
+      psItem._PotatoSlider.items += itemSize
     }
-
-    psItems._PotatoSlider = { x: 0 }
 
     _this._setStyle( psItems, {
       width: allW + 'px'
@@ -179,6 +184,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
 
     rootEl.appendChild( psRoot )
 
+    _this._maxIdx = psItemsArr.length - 1
+
     _this._psItemsArr = psItemsArr
     _this._psItems = psItems
     _this._psWrap = psWrap
@@ -189,7 +196,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     var _this = this,
       getEl = _this._getEl,
       cfg = _this._cfg
-    
+
     _this._navPrev = getEl( cfg.prevSelector )
     _this._navNext = getEl( cfg.nextSelector )
   },
@@ -264,7 +271,6 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     } )
 
     addEvent( doc, 'mouseleave', function( e ) {
-      console.log( 'leave' )
       _this._unbindDocMouseEvents()
       _this._moveEnd( e )
     } )
@@ -360,6 +366,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       rootStyle = _this._rootEl.style,
       touch = e.touch || ( e.touches ? e.touches[ 0 ] : false )
 
+    _this._stopLoop()
+
     // _this._lastTarget = e.target.closest( 'a[href], button' )
 
     _this._move.b = touch ? touch.clientX : e.clientX
@@ -406,24 +414,22 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
   },
 
   _updatePos: function( x ) {
-    this._psItems.style.transform = 'matrix(1,0,0,1,' + x +  ',0)'
+    this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
   },
 
   _alignPos: function() {
+    var _this = this
     // _this._psItems.style.transform = ''
-    this._animX( 0, 600 )
+    _this._animPos( _this._cfg.duration )
   },
 
-  _animX: function( x, duration ) {
+  _animPos: function( duration ) {
     var _this = this,
-      time = _this._time,
-      posX = _this._posX
+      time = _this._time
 
     time.b = window.performance.now()
     time.e = time.b + duration
     time.d = duration
-    posX.b = _this._move.d
-    posX.e = x
 
     _this._startLoop()
   },
@@ -469,14 +475,14 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     if( fract < 0 ) fract = 0
     else if( fract > 1 ) fract = 1
 
-    fract = _this._easing[_this._cfg.easing]( fract )
+    fract = _this._easing[ _this._cfg.easing ]( fract )
 
     _this._updatePos( ( 1 - fract ) * _this._move.d )
   },
 
   _setRaf: function( fn ) {
     var _this = this
-    
+
     if( fn ) {
       _this._raf = requestAnimationFrame( fn )
     } else {
@@ -486,11 +492,29 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
   },
 
   next: function() {
-    console.log( 'next' )
+    var _this = this
+
+    _this.goTo( _this._currIdx + 1 )
   },
-  
+
   prev: function() {
-    console.log( 'prev' )
+    var _this = this
+
+    _this.goTo( _this._currIdx - 1 )
+  },
+
+  goTo: function( itemIdx ) {
+    var _this = this,
+      maxIdx = _this._maxIdx,
+      loopCfg = _this._cfg.loop
+
+    if( itemIdx === _this._currIdx ) return
+
+    if( itemIdx > maxIdx ) itemIdx = loopCfg ? 0 : maxIdx
+    if( itemIdx < 0 ) itemIdx = loopCfg ? maxIdx : 0
+
+    _this._currIdx = itemIdx
+    // console.log( 'goto: ', itemIdx )
   },
 
   _restoreHtml: function() {

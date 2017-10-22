@@ -1,98 +1,103 @@
-if( !Object.keys ) {
-  Object.keys = function( obj ) {
-    // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
+( function() {
 
-    var keysArr = [], key
-
-    for( key in obj ) {
-      if( obj.hasOwnProperty( key ) ) keysArr.push( key )
-    }
-
-    return keysArr
-  }
-}
-
-if( !Object.assign ) {
-  Object.assign = function( obj ) {
-    // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
-
-    var resultObj = Object( obj ), tmpSource, keysArr, i, l, j, k, tmpKey
-
-    for( i = 1, l = arguments.length; i < l; i++ ) {
-      tmpSource = arguments[ i ]
-
-      if( !tmpSource ) continue
-
-      keysArr = Object.keys( tmpSource )
-
-      for( j = 0, k = keysArr.length; j < k; j++ ) {
-        tmpKey = keysArr[ j ]
-
-        resultObj[ tmpKey ] = tmpSource[ tmpKey ]
+  if( !Object.keys ) {
+    Object.keys = function( obj ) {
+      // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
+  
+      var keysArr = [], key
+  
+      for( key in obj ) {
+        if( obj.hasOwnProperty( key ) ) keysArr.push( key )
       }
-    }
-
-    return resultObj
-  }
-}
-
-if( !Function.prototype.bind ) {
-  Function.prototype.bind = function( ctx ) {
-    var fn = this, args = Array.prototype.slice.call( arguments, 1 )
-
-    return function() {
-      fn.apply( ctx, args )
+  
+      return keysArr
     }
   }
-}
-
-if( !Element.prototype.matches ) {
-  var elPrototype = Element.prototype
-  elPrototype.matches = ( function() {
-    return elPrototype.matches ||
-      elPrototype.matchesSelector ||
-      elPrototype.webkitMatchesSelector ||
-      elPrototype.mozMatchesSelector ||
-      elPrototype.oMatchesSelector ||
-      elPrototype.msMatchesSelector ||
-      function( selector ) {
-        var matches = document.querySelectorAll( selector ),
-          mi, ml = matches.length
-
-        for( mi = 0; mi < ml; mi++ ) {
-          if( matches[ mi ] === this ) return true
+  
+  if( !Object.assign ) {
+    Object.assign = function( obj ) {
+      // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
+  
+      var resultObj = Object( obj ), tmpSource, keysArr, i, l, j, k, tmpKey
+  
+      for( i = 1, l = arguments.length; i < l; i++ ) {
+        tmpSource = arguments[ i ]
+  
+        if( !tmpSource ) continue
+  
+        keysArr = Object.keys( tmpSource )
+  
+        for( j = 0, k = keysArr.length; j < k; j++ ) {
+          tmpKey = keysArr[ j ]
+  
+          resultObj[ tmpKey ] = tmpSource[ tmpKey ]
         }
-
-        return false
       }
-  } )()
-}
-
-if( !window.requestAnimationFrame ) {
-  var w = window
-  w.requestAnimationFrame = ( function() {
-    return w.requestAnimationFrame ||
-      w.webkitRequestAnimationFrame ||
-      w.mozRequestAnimationFrame ||
-      w.oRequestAnimationFrame ||
-      w.msRequestAnimationFrame ||
-      function( cb ) {
-        return w.setTimeout( cb, 1000 / 60 )
+  
+      return resultObj
+    }
+  }
+  
+  if( !Function.prototype.bind ) {
+    Function.prototype.bind = function( ctx ) {
+      var fn = this, args = Array.prototype.slice.call( arguments, 1 )
+  
+      return function() {
+        fn.apply( ctx, args )
       }
-  } )()
-}
+    }
+  }
+  
+  if( !Element.prototype.matches ) {
+    var elPrototype = Element.prototype
+    elPrototype.matches = ( function() {
+      return elPrototype.matches ||
+        elPrototype.matchesSelector ||
+        elPrototype.webkitMatchesSelector ||
+        elPrototype.mozMatchesSelector ||
+        elPrototype.oMatchesSelector ||
+        elPrototype.msMatchesSelector ||
+        function( selector ) {
+          var matches = document.querySelectorAll( selector ),
+            mi, ml = matches.length
+  
+          for( mi = 0; mi < ml; mi++ ) {
+            if( matches[ mi ] === this ) return true
+          }
+  
+          return false
+        }
+    } )()
+  }
+  
+  var win = window
 
-if( !window.cancelAnimationFrame ) {
-  var w = window
-  w.cancelAnimationFrame = ( function() {
-    return w.cancelAnimationFrame ||
-      w.webkitCancelRequestAnimationFrame ||
-      w.mozCancelRequestAnimationFrame ||
-      w.oCancelRequestAnimationFrame ||
-      w.msCancelRequestAnimationFrame ||
-      clearTimeout
-  } )()
-}
+  if( !window.requestAnimationFrame ) {
+    win.requestAnimationFrame = ( function() {
+      return win.requestAnimationFrame ||
+        win.webkitRequestAnimationFrame ||
+        win.mozRequestAnimationFrame ||
+        win.oRequestAnimationFrame ||
+        win.msRequestAnimationFrame ||
+        function( cb ) {
+          return win.setTimeout( cb, 1000 / 60 )
+        }
+    } )()
+  }
+  
+  if( !window.cancelAnimationFrame ) {
+    win.cancelAnimationFrame = ( function() {
+      return win.cancelAnimationFrame ||
+        win.webkitCancelRequestAnimationFrame ||
+        win.mozCancelRequestAnimationFrame ||
+        win.oCancelRequestAnimationFrame ||
+        win.msCancelRequestAnimationFrame ||
+        clearTimeout
+    } )()
+  }
+  
+
+} )()
 
 /**
  * PotatoSlider Core
@@ -101,7 +106,7 @@ if( !window.cancelAnimationFrame ) {
  */
 
 var PotatoSlider = function( rootEl, cfg ) { this.preInit( rootEl, cfg ) }
-PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
+Object.assign( PotatoSlider.prototype, {
 
   _easing: {
     easeOutCubic: function( f ) {
@@ -119,7 +124,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     _this._itemsArr = _this._getItemsArr( rootEl )
 
     // default config
-    _this._cfg = Object.assign( {
+    _this._mainCfg = Object.assign( {
       nameSpace: 'potatoSlider',
       autoInit: true,
       loop: true,
@@ -131,16 +136,13 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       gap: 0,
       largeSize: 2,
       largeSelector: '[data-ps-large]',
-      easing: 'easeOutCubic'
+      duration: 600,
+      easing: 'easeOutCubic',
+      rwd: {}
     }, cfg )
 
-    if( _this._cfg.autoWidth ) _this._cfg = Object.assign( _this._cfg, {
-      items: 1,
-      perItem: 1,
-      largeSize: 1
-    } )
-
     _this._currIdx = 0
+    _this._maxIdx = 0
 
     _this._move = {
       d: 0, // diff
@@ -159,12 +161,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       e: 0 // end
     }
 
-    _this._posX = {
-      b: 0, // begin
-      e: 0 // end
-    }
-
-    if( _this._cfg.autoInit ) _this.init()
+    if( _this._mainCfg.autoInit ) _this.init()
   },
 
   _getItemsArr: function( rootEl ) {
@@ -179,7 +176,22 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     return itemsArr
   },
 
+  _setRWDCfg: function() {
+    var _this = this
+
+    _this._cfg = Object.assign( {}, _this._mainCfg, {
+      rwd: {}
+    } )
+
+    if( _this._cfg.autoWidth ) Object.assign( _this._cfg, {
+      items: 1,
+      perItem: 1,
+      largeSize: 1
+    } )
+  },
+
   init: function() {
+    this._setRWDCfg()
     this._prepareHtml()
     this._getNav()
     this._bindEvents()
@@ -242,7 +254,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
         }, psItems )
 
         psItemsArr.push( psItem )
-        psItem.PotatoSlider = { items: 0 }
+        psItem._PotatoSlider = { items: 0 }
 
         allW += psItemW
       }
@@ -259,10 +271,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       itemSize = _this._isLarge( itemEl ) ? cfg.largeSize : 1
 
       itemsCount += itemSize
-      psItem.PotatoSlider.items += itemSize
+      psItem._PotatoSlider.items += itemSize
     }
-
-    psItems._PotatoSlider = { x: 0 }
 
     _this._setStyle( psItems, {
       width: allW + 'px'
@@ -275,6 +285,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
 
     rootEl.appendChild( psRoot )
 
+    _this._maxIdx = psItemsArr.length - 1
+
     _this._psItemsArr = psItemsArr
     _this._psItems = psItems
     _this._psWrap = psWrap
@@ -285,7 +297,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     var _this = this,
       getEl = _this._getEl,
       cfg = _this._cfg
-    
+
     _this._navPrev = getEl( cfg.prevSelector )
     _this._navNext = getEl( cfg.nextSelector )
   },
@@ -360,7 +372,6 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     } )
 
     addEvent( doc, 'mouseleave', function( e ) {
-      console.log( 'leave' )
       _this._unbindDocMouseEvents()
       _this._moveEnd( e )
     } )
@@ -456,6 +467,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       rootStyle = _this._rootEl.style,
       touch = e.touch || ( e.touches ? e.touches[ 0 ] : false )
 
+    _this._stopLoop()
+
     // _this._lastTarget = e.target.closest( 'a[href], button' )
 
     _this._move.b = touch ? touch.clientX : e.clientX
@@ -502,24 +515,22 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
   },
 
   _updatePos: function( x ) {
-    this._psItems.style.transform = 'matrix(1,0,0,1,' + x +  ',0)'
+    this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
   },
 
   _alignPos: function() {
+    var _this = this
     // _this._psItems.style.transform = ''
-    this._animX( 0, 600 )
+    _this._animPos( _this._cfg.duration )
   },
 
-  _animX: function( x, duration ) {
+  _animPos: function( duration ) {
     var _this = this,
-      time = _this._time,
-      posX = _this._posX
+      time = _this._time
 
     time.b = window.performance.now()
     time.e = time.b + duration
     time.d = duration
-    posX.b = _this._move.d
-    posX.e = x
 
     _this._startLoop()
   },
@@ -565,14 +576,14 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     if( fract < 0 ) fract = 0
     else if( fract > 1 ) fract = 1
 
-    fract = _this._easing[_this._cfg.easing]( fract )
+    fract = _this._easing[ _this._cfg.easing ]( fract )
 
     _this._updatePos( ( 1 - fract ) * _this._move.d )
   },
 
   _setRaf: function( fn ) {
     var _this = this
-    
+
     if( fn ) {
       _this._raf = requestAnimationFrame( fn )
     } else {
@@ -582,11 +593,29 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
   },
 
   next: function() {
-    console.log( 'next' )
+    var _this = this
+
+    _this.goTo( _this._currIdx + 1 )
   },
-  
+
   prev: function() {
-    console.log( 'prev' )
+    var _this = this
+
+    _this.goTo( _this._currIdx - 1 )
+  },
+
+  goTo: function( itemIdx ) {
+    var _this = this,
+      maxIdx = _this._maxIdx,
+      loopCfg = _this._cfg.loop
+
+    if( itemIdx === _this._currIdx ) return
+
+    if( itemIdx > maxIdx ) itemIdx = loopCfg ? 0 : maxIdx
+    if( itemIdx < 0 ) itemIdx = loopCfg ? maxIdx : 0
+
+    _this._currIdx = itemIdx
+    // console.log( 'goto: ', itemIdx )
   },
 
   _restoreHtml: function() {
