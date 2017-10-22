@@ -185,7 +185,7 @@ Object.assign( PotatoSlider.prototype, {
         }, psItems )
 
         psItemsArr.push( psItem )
-        psItem._PotatoSlider = { items: 0 }
+        psItem._psItemSize = 0
 
         allW += psItemW
       }
@@ -202,7 +202,7 @@ Object.assign( PotatoSlider.prototype, {
       itemSize = _this._isLarge( itemEl ) ? cfg.largeSize : 1
 
       itemsCount += itemSize
-      psItem._PotatoSlider.items += itemSize
+      psItem._psItemSize += itemSize
     }
 
     _this._maxIdx = psItemsArr.length - 1
