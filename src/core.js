@@ -35,7 +35,7 @@ Object.assign( PotatoSlider.prototype, {
       gap: 0,
       largeSize: 2,
       largeSelector: '[data-ps-large]',
-      duration: 600, // ms
+      duration: 500, // ms
       easing: 'easeOutCubic',
       rwdMobileFirst: true,
       rwd: {}
@@ -120,18 +120,18 @@ Object.assign( PotatoSlider.prototype, {
 
   init: function() {
     this._prepareHtml()
-    this._getNav()
     this._bindEvents()
   },
 
   _prepareHtml: function() {
     var _this = this,
       cfg,
+      getElW = _this._getElW,
       setStyle = _this._setStyle,
       createEl = _this._createEl.bind( _this ),
       rootEl = _this._rootEl,
       itemsArr = _this._itemsArr,
-      i = 0, l = itemsArr.length,
+      i, l = itemsArr.length,
       itemEl, psItem,
       itemElW, psItemW,
       rootW, allW = 0,
@@ -148,7 +148,7 @@ Object.assign( PotatoSlider.prototype, {
 
     cfg = _this._setRWDCfg()
 
-    rootW = rootEl.getBoundingClientRect().width
+    rootW = getElW( rootEl )
 
     psRoot = createEl( 'div', '', {
       position: 'relative'
@@ -167,7 +167,7 @@ Object.assign( PotatoSlider.prototype, {
       itemEl = itemsArr[ i ]
 
       if( cfg.autoWidth ) {
-        psItemW = itemEl.getBoundingClientRect().width
+        psItemW = getElW( itemEl )
         itemElW = '100%'
       } else {
         psItemW = Math.floor( rootW * 100 / cfg.items ) / 100
@@ -205,8 +205,19 @@ Object.assign( PotatoSlider.prototype, {
       psItem._PotatoSlider.items += itemSize
     }
 
+    _this._maxIdx = psItemsArr.length - 1
+
+    _this._psItemsArr = psItemsArr
+    _this._psItems = psItems
+    _this._psWrap = psWrap
+    _this._psRoot = psRoot
+
+    rootEl.appendChild( psRoot )
+
+    if( cfg.loop ) allW = _this._cloneItems( allW )
+
     setStyle( psItems, {
-      width: allW + 'px'
+      width: allW + 'px',
     } )
 
     setStyle( rootEl, {
@@ -214,14 +225,11 @@ Object.assign( PotatoSlider.prototype, {
       height: ''
     } )
 
-    rootEl.appendChild( psRoot )
+    setStyle( psItems, {
+      left: -_this._getElL( psItemsArr[ _this._currIdx ] ) + 'px'
+    } )
 
-    _this._maxIdx = psItemsArr.length - 1
-
-    _this._psItemsArr = psItemsArr
-    _this._psItems = psItems
-    _this._psWrap = psWrap
-    _this._psRoot = psRoot
+    _this._getNav()
   },
 
   _getNav: function() {
@@ -235,6 +243,50 @@ Object.assign( PotatoSlider.prototype, {
 
   _isLarge: function( itemEl ) {
     return itemEl.matches( this._cfg.largeSelector )
+  },
+
+  _cloneItems: function( allW ) {
+    var _this = this,
+      getElW = _this._getElW,
+      cloneItem = _this._cloneItem,
+      psItems = _this._psItems,
+      psItemsArr = _this._psItemsArr,
+      psItem, clonesW,
+      wrapW = getElW( _this._psWrap ),
+      i, l = psItemsArr.length
+
+    // after
+    i = 0
+    clonesW = 0
+    while( clonesW < wrapW ) {
+      psItem = psItemsArr[ i % l ]
+      clonesW += getElW( psItem )
+      psItems.appendChild( cloneItem( psItem ) )
+      i++
+    }
+    allW += clonesW
+    
+    // before
+    i = -1
+    clonesW = 0
+    while( clonesW < wrapW ) {
+      psItem = psItemsArr[ ( i + l ) % l ]
+      clonesW += getElW( psItem )
+      psItems.insertBefore( cloneItem( psItem ), psItems.children[0] )
+      i--
+    }
+    allW += clonesW
+
+    return allW
+  },
+
+  _cloneItem: function( item ) {
+    var itemClass = item.getAttribute( 'class' ),
+      cloneItem = item.cloneNode( true )
+
+    cloneItem.setAttribute( 'class', itemClass + ' ' + itemClass + '--clone' )
+
+    return cloneItem
   },
 
   _bindEvents: function() {
@@ -367,6 +419,14 @@ Object.assign( PotatoSlider.prototype, {
 
   _getEl: function( selector, relEl ) {
     return ( relEl || document ).querySelector( selector )
+  },
+
+  _getElW: function( el ) {
+    return el.getBoundingClientRect().width
+  },
+
+  _getElL: function( el ) {
+    return el.getBoundingClientRect().left - el.offsetParent.getBoundingClientRect().left
   },
 
   _createEl: function( selector, elClassSuffix, styleObj, parentEl ) {
