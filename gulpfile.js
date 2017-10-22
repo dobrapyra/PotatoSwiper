@@ -12,7 +12,11 @@ let notifyLogOnly = notify.withReporter( ( options, callback ) => {
 
 notifyLogOnly.logLevel( 1 )
 
-gulp.task( 'buildES5', function() {
+gulp.task( 'buildES5', [ 'buildCore', 'buildEasing' ], function() {
+  console.log( 'Message: all build done!' )
+} )
+
+gulp.task( 'buildCore', function() {
   return gulp
     .src( [
       './src/polyfills.js',
@@ -20,13 +24,27 @@ gulp.task( 'buildES5', function() {
     ] )
     .pipe( concat( 'potatoslider.js' ) )
     .pipe( gulp.dest( './dist' ) )
-    .pipe( notifyLogOnly( { message: 'ES5 build done!' } ) )
+    .pipe( notifyLogOnly( { message: 'core build done!' } ) )
     .pipe( rename( 'potatoslider.min.js' ) )
     .pipe( stripdebug() )
     .pipe( uglify() )
     .pipe( gulp.dest( './dist' ) )
-    .pipe( notifyLogOnly( { message: 'ES5 min build done!' } ) )
-    .pipe( notify( { message: 'ES5 all build done!' } ) )
+    .pipe( notifyLogOnly( { message: 'core min build done!' } ) )
+} )
+
+gulp.task( 'buildEasing', function() {
+  return gulp
+    .src( [
+      './src/easing.js'
+    ] )
+    .pipe( rename( 'potatoslider-easing.js' ) )
+    .pipe( gulp.dest( './dist' ) )
+    .pipe( notifyLogOnly( { message: 'easing build done!' } ) )
+    .pipe( rename( 'potatoslider-easing.min.js' ) )
+    .pipe( stripdebug() )
+    .pipe( uglify() )
+    .pipe( gulp.dest( './dist' ) )
+    .pipe( notifyLogOnly( { message: 'easing min build done!' } ) )
 } )
 
 gulp.task( 'watch', [ 'buildES5' ], function() {

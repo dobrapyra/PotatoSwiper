@@ -96,11 +96,19 @@ if( !window.cancelAnimationFrame ) {
 
 /**
  * PotatoSlider Core
- * Author dobrapyra (Michał Zieliński)
+ * Author: dobrapyra (Michał Zieliński)
+ * Version: 2017-10-22
  */
 
 var PotatoSlider = function( rootEl, cfg ) { this.preInit( rootEl, cfg ) }
 PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
+
+  _easing: {
+    easeOutCubic: function( f ) {
+      f = 1 - f
+      return 1 - ( f * f * f )
+    }
+  },
 
   preInit: function( rootEl, cfg ) {
     var _this = this
@@ -110,6 +118,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     _this._rootEl = rootEl
     _this._itemsArr = _this._getItemsArr( rootEl )
 
+    // default config
     _this._cfg = Object.assign( {
       nameSpace: 'potatoSlider',
       autoInit: true,
@@ -121,7 +130,8 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       nextSelector: '[data-ps-next]',
       gap: 0,
       largeSize: 2,
-      largeSelector: '[data-ps-large]'
+      largeSelector: '[data-ps-large]',
+      easing: 'easeOutCubic'
     }, cfg )
 
     if( _this._cfg.autoWidth ) _this._cfg = Object.assign( _this._cfg, {
@@ -137,7 +147,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       b: null // begin
     }
 
-    _this._lastTarget = null
+    // _this._lastTarget = null
 
     _this._inLoop = false
     _this._raf = null
@@ -148,6 +158,7 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
       b: 0, // begin
       e: 0 // end
     }
+
     _this._posX = {
       b: 0, // begin
       e: 0 // end
@@ -553,8 +564,9 @@ PotatoSlider.prototype = Object.assign( PotatoSlider.prototype, {
     fract = ( t - time.b ) / time.d
     if( fract < 0 ) fract = 0
     else if( fract > 1 ) fract = 1
-    // fract = this._easing.easeOutCubic( fract )
-    // scrollTop( this._bScroll + fract * this._dScroll ) // to remove
+
+    fract = _this._easing[_this._cfg.easing]( fract )
+
     _this._updatePos( ( 1 - fract ) * _this._move.d )
   },
 

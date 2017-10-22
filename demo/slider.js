@@ -12,7 +12,7 @@ ready( function() {
     loop: true,
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
-    autoWidth: true
+    autoWidth: true,
     // items: 3,
     // perItem: 2
   } )
