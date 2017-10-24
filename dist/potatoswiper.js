@@ -100,12 +100,12 @@
 } )()
 
 /**
- * PotatoSlider Core
+ * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-10-22
+ * Version: 2017-10-24
  */
 
-var PotatoSlider = function( rootEl, cfg ) {
+var PotatoSwiper = function( rootEl, cfg ) {
 
   if( rootEl.length ) {
     return this._multiInit( rootEl, cfg )
@@ -116,7 +116,7 @@ var PotatoSlider = function( rootEl, cfg ) {
 
 }
 
-Object.assign( PotatoSlider.prototype, {
+Object.assign( PotatoSwiper.prototype, {
 
   _easing: {
     easeOutCubic: function( f ) {
@@ -126,27 +126,27 @@ Object.assign( PotatoSlider.prototype, {
   },
 
   _multiInit: function( rootArr, cfg ) {
-    var slidersArr = [],
+    var swipersArr = [],
       i = 0, l = rootArr.length
     
     for( ; i < l; i++ ) {
-      slidersArr.push( new PotatoSlider( rootArr[ i ], cfg ) )
+      swipersArr.push( new PotatoSwiper( rootArr[ i ], cfg ) )
     }
 
-    return slidersArr
+    return swipersArr
   },
 
   _preInit: function( rootEl, cfg ) {
     var _this = this
 
-    rootEl.PotatoSlider = _this
+    rootEl.PotatoSwiper = _this
 
     _this._rootEl = rootEl
     _this._itemsArr = _this._getItemsArr( rootEl )
 
     // default config
     _this._mainCfg = Object.assign( {
-      nameSpace: 'potatoSlider',
+      nameSpace: 'potatoSwiper',
       autoInit: true,
       loop: true,
       items: 1,

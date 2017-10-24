@@ -1,9 +1,9 @@
 /**
- * PotatoSlider Easing pack
+ * PotatoSwiper Easing pack
  * Author dobrapyra (Michał Zieliński)
  */
 
-Object.assign( PotatoSlider.prototype._easing, {
+Object.assign( PotatoSwiper.prototype._easing, {
 
   linear: function( f ) {
     return f

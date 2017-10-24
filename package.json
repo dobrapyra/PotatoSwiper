@@ -1,23 +1,23 @@
 {
-  "name": "potatoslider",
+  "name": "potatoswiper",
   "version": "1.0.0",
-  "description": "PotatoSlider - pure js slider",
+  "description": "PotatoSwiper - pure js carousel / slider",
   "main": "potatoslider.js",
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dobrapyra/PotatoSlider.git"
+    "url": "git+https://github.com/dobrapyra/PotatoSwiper.git"
   },
   "keywords": [
-    "slider",
-    "carousel"
+    "carousel",
+    "slider"
   ],
   "author": "dobrapyra",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dobrapyra/PotatoSlider/issues"
+    "url": "https://github.com/dobrapyra/PotatoSwiper/issues"
   },
-  "homepage": "https://github.com/dobrapyra/PotatoSlider#readme",
+  "homepage": "https://github.com/dobrapyra/PotatoSwiper#readme",
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",

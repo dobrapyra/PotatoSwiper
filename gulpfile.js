@@ -22,10 +22,10 @@ gulp.task( 'buildCore', function() {
       './src/polyfills.js',
       './src/core.js'
     ] )
-    .pipe( concat( 'potatoslider.js' ) )
+    .pipe( concat( 'potatoswiper.js' ) )
     .pipe( gulp.dest( './dist' ) )
     .pipe( notifyLogOnly( { message: 'core build done!' } ) )
-    .pipe( rename( 'potatoslider.min.js' ) )
+    .pipe( rename( 'potatoswiper.min.js' ) )
     .pipe( stripdebug() )
     .pipe( uglify() )
     .pipe( gulp.dest( './dist' ) )
@@ -37,10 +37,10 @@ gulp.task( 'buildEasing', function() {
     .src( [
       './src/easing.js'
     ] )
-    .pipe( rename( 'potatoslider-easing.js' ) )
+    .pipe( rename( 'potatoswiper-easing.js' ) )
     .pipe( gulp.dest( './dist' ) )
     .pipe( notifyLogOnly( { message: 'easing build done!' } ) )
-    .pipe( rename( 'potatoslider-easing.min.js' ) )
+    .pipe( rename( 'potatoswiper-easing.min.js' ) )
     .pipe( stripdebug() )
     .pipe( uglify() )
     .pipe( gulp.dest( './dist' ) )

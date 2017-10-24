@@ -8,7 +8,7 @@ function ready(fn) {
 
 ready( function() {
 
-  window['psSlider'] = new PotatoSlider( document.querySelectorAll( '.slider__items' ), {
+  window['psSlider'] = new PotatoSwiper( document.querySelectorAll( '.slider__items' ), {
     loop: true,
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
