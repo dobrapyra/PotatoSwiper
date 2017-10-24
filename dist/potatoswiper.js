@@ -128,9 +128,13 @@ Object.assign( PotatoSwiper.prototype, {
   _multiInit: function( rootArr, cfg ) {
     var swipersArr = [],
       i = 0, l = rootArr.length
-    
+
     for( ; i < l; i++ ) {
       swipersArr.push( new PotatoSwiper( rootArr[ i ], cfg ) )
+    }
+
+    for( i = 0; i < l; i++ ) {
+      rootArr[ i ].PotatoSwiper.refresh()
     }
 
     return swipersArr
@@ -164,6 +168,8 @@ Object.assign( PotatoSwiper.prototype, {
       rwd: {}
     }, cfg )
     _this._cfg = {}
+
+    _this._treashold = 20
 
     _this._currIdx = 0
     _this._maxIdx = 0
@@ -349,9 +355,12 @@ Object.assign( PotatoSwiper.prototype, {
       height: ''
     } )
 
+    _this._cacheLeft()
+
     setStyle( psItems, {
-      left: -_this._getElL( psItemsArr[ _this._currIdx ] ) + 'px'
+      left: -psItemsArr[ _this._currIdx ]._psItemL + 'px'
     } )
+    _this._updatePos( 0 )
 
     _this._getNav()
   },
@@ -412,6 +421,19 @@ Object.assign( PotatoSwiper.prototype, {
     cloneItem.setAttribute( 'class', itemClass + ' ' + itemClass + '--clone' )
 
     return cloneItem
+  },
+
+  _cacheLeft: function() {
+    var _this = this,
+      psItemsArr = _this._psItemsArr,
+      getElL = _this._getElL,
+      i = 0, l = psItemsArr.length,
+      psItem
+    
+    for( ; i < l; i++ ) {
+      psItem = psItemsArr[ i ]
+      psItem._psItemL = getElL( psItem )
+    }
   },
 
   _bindEvents: function() {
@@ -528,18 +550,32 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   _addEvent: function( el, eventName, fn ) {
-    el._psEvents = el._psEvents || {}
-    if( el._psEvents[ eventName ] ) this._remEvent( el, eventName )
+    var _this = this,
+      psRoot, elEvents
 
-    el._psEvents[ eventName ] = fn
+    if( el === window || el === document ) {
+      psRoot = _this._psRoot
+      elEvents = psRoot._psEvents = psRoot._psEvents || {}
+    } else {
+      elEvents = el._psEvents = el._psEvents || {}
+    }
 
-    el.addEventListener( eventName, el._psEvents[ eventName ] )
+    if( elEvents[ eventName ] ) this._remEvent( el, eventName )
+
+    elEvents[ eventName ] = fn
+
+    el.addEventListener( eventName, elEvents[ eventName ] )
   },
 
   _remEvent: function( el, eventName ) {
-    if( !el._psEvents || !el._psEvents[ eventName ] ) return
+    var _this = this,
+      elEvents
 
-    el.removeEventListener( eventName, el._psEvents[ eventName ] )
+    elEvents = ( el === window || el === document ) ? _this._psRoot._psEvents : el._psEvents
+
+    if( !elEvents || !elEvents[ eventName ] ) return
+
+    el.removeEventListener( eventName, elEvents[ eventName ] )
   },
 
   _getEl: function( selector, scopeEl ) {
@@ -628,18 +664,16 @@ Object.assign( PotatoSwiper.prototype, {
       //   _this._lastTarget.click()
       //   _this._lastTarget = null
       // }
-      _this._alignPos()
+      _this._animPos( _this._cfg.duration )
     }
   },
 
   _updatePos: function( x ) {
-    this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
-  },
+    var _this = this,
+      psItems = _this._psItems
 
-  _alignPos: function() {
-    var _this = this
-    // _this._psItems.style.transform = ''
-    _this._animPos( _this._cfg.duration )
+    psItems._psItemsX = x
+    psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
   },
 
   _animPos: function( duration ) {
@@ -711,29 +745,45 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   next: function() {
-    var _this = this
-
-    _this.goTo( _this._currIdx + 1 )
+    this.goBy( 1 )
   },
 
   prev: function() {
+    this.goBy( -1 )
+  },
+
+  goBy: function( offset ) {
     var _this = this
 
-    _this.goTo( _this._currIdx - 1 )
+    _this.goTo( _this._currIdx + offset )
   },
 
   goTo: function( itemIdx ) {
     var _this = this,
+      psItemsArr = _this._psItemsArr,
+      psItems = _this._psItems,
       maxIdx = _this._maxIdx,
-      loopCfg = _this._cfg.loop
+      loopCfg = _this._cfg.loop,
+      newX = psItems._psItemsX,
+      newL = 0
 
     if( itemIdx === _this._currIdx ) return
 
     if( itemIdx > maxIdx ) itemIdx = loopCfg ? 0 : maxIdx
     if( itemIdx < 0 ) itemIdx = loopCfg ? maxIdx : 0
+    
+    newL = -psItemsArr[ itemIdx ]._psItemL
+    newX += newL + psItemsArr[ _this._currIdx ]._psItemL
+
+    _this._setStyle( psItems, {
+      left: newL + 'px'
+    } )
+    _this._updatePos( -newX )
+    _this._move.d = -newX
 
     _this._currIdx = itemIdx
-    // console.log( 'goto: ', itemIdx )
+
+    _this._animPos( _this._cfg.duration )
   },
 
   _restoreHtml: function() {
