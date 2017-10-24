@@ -105,7 +105,17 @@
  * Version: 2017-10-22
  */
 
-var PotatoSlider = function( rootEl, cfg ) { this.preInit( rootEl, cfg ) }
+var PotatoSlider = function( rootEl, cfg ) {
+
+  if( rootEl.length ) {
+    return this._multiInit( rootEl, cfg )
+  } else {
+    this._preInit( rootEl, cfg )
+    // return this
+  }
+
+}
+
 Object.assign( PotatoSlider.prototype, {
 
   _easing: {
@@ -115,7 +125,18 @@ Object.assign( PotatoSlider.prototype, {
     }
   },
 
-  preInit: function( rootEl, cfg ) {
+  _multiInit: function( rootArr, cfg ) {
+    var slidersArr = [],
+      i = 0, l = rootArr.length
+    
+    for( ; i < l; i++ ) {
+      slidersArr.push( new PotatoSlider( rootArr[ i ], cfg ) )
+    }
+
+    return slidersArr
+  },
+
+  _preInit: function( rootEl, cfg ) {
     var _this = this
 
     rootEl.PotatoSlider = _this
@@ -131,6 +152,7 @@ Object.assign( PotatoSlider.prototype, {
       items: 1,
       perItem: 1,
       autoWidth: false,
+      navScopeEl: rootEl.parentElement,
       prevSelector: '[data-ps-prev]',
       nextSelector: '[data-ps-next]',
       gap: 0,
@@ -183,13 +205,13 @@ Object.assign( PotatoSlider.prototype, {
       mainCfg = _this._mainCfg,
       cfg, rwdCfg = {}, rwdArr = [],
       bodyW = _this._getEl( 'body' ).offsetWidth,
-      i, m
+      i = 0, m
 
     if( mainCfg.rwd ) {
       rwdArr = Object.keys( mainCfg.rwd ) // maybe sort required
       m = rwdArr.length - 1
 
-      for( i = 0; i <= m; i++ ) {
+      for( ; i <= m; i++ ) {
         if( mainCfg.rwdMobileFirst ) {
           if( rwdArr[ i ] <= bodyW ) {
             rwdCfg = mainCfg.rwd[ rwdArr[ i ] ]
@@ -232,7 +254,7 @@ Object.assign( PotatoSlider.prototype, {
       createEl = _this._createEl.bind( _this ),
       rootEl = _this._rootEl,
       itemsArr = _this._itemsArr,
-      i, l = itemsArr.length,
+      i = 0, l = itemsArr.length,
       itemEl, psItem,
       itemElW, psItemW,
       rootW, allW = 0,
@@ -264,7 +286,7 @@ Object.assign( PotatoSlider.prototype, {
       position: 'relative'
     }, psWrap )
 
-    for( i = 0; i < l; i++ ) {
+    for( ; i < l; i++ ) {
       itemEl = itemsArr[ i ]
 
       if( cfg.autoWidth ) {
@@ -287,6 +309,7 @@ Object.assign( PotatoSlider.prototype, {
 
         psItemsArr.push( psItem )
         psItem._psItemSize = 0
+        psItem._psItemW = psItemW
 
         allW += psItemW
       }
@@ -297,7 +320,7 @@ Object.assign( PotatoSlider.prototype, {
         left: 0,
         width: itemElW,
         float: 'none'
-      } )
+      }, true )
       psItem.appendChild( itemEl )
 
       itemSize = _this._isLarge( itemEl ) ? cfg.largeSize : 1
@@ -336,10 +359,11 @@ Object.assign( PotatoSlider.prototype, {
   _getNav: function() {
     var _this = this,
       getEl = _this._getEl,
-      cfg = _this._cfg
+      cfg = _this._cfg,
+      navScopeEl = cfg.navScopeEl
 
-    _this._navPrev = getEl( cfg.prevSelector )
-    _this._navNext = getEl( cfg.nextSelector )
+    _this._navPrev = getEl( cfg.prevSelector, navScopeEl )
+    _this._navNext = getEl( cfg.nextSelector, navScopeEl )
   },
 
   _isLarge: function( itemEl ) {
@@ -366,7 +390,7 @@ Object.assign( PotatoSlider.prototype, {
       i++
     }
     allW += clonesW
-    
+
     // before
     i = -1
     clonesW = 0
@@ -518,8 +542,8 @@ Object.assign( PotatoSlider.prototype, {
     el.removeEventListener( eventName, el._psEvents[ eventName ] )
   },
 
-  _getEl: function( selector, relEl ) {
-    return ( relEl || document ).querySelector( selector )
+  _getEl: function( selector, scopeEl ) {
+    return ( scopeEl || document ).querySelector( selector )
   },
 
   _getElW: function( el ) {
@@ -542,14 +566,16 @@ Object.assign( PotatoSlider.prototype, {
     return el
   },
 
-  _setStyle: function( el, styleObj ) {
+  _setStyle: function( el, styleObj, backup ) {
     var elStyle = el.style,
       styleKeys = Object.keys( styleObj ),
       i = 0, l = styleKeys.length,
       styleKey
 
+    el._psStyleCopy = el._psStyleCopy || {}
     for( ; i < l; i++ ) {
       styleKey = styleKeys[ i ]
+      if( backup == 1 ) el._psStyleCopy[ styleKey ] = elStyle[ styleKey ]
       elStyle[ styleKey ] = styleObj[ styleKey ]
     }
   },
@@ -719,13 +745,7 @@ Object.assign( PotatoSlider.prototype, {
     for( ; i < l; i++ ) {
       itemEl = itemsArr[ i ]
 
-      _this._setStyle( itemEl, {
-        position: '',
-        top: '',
-        left: '',
-        width: '',
-        float: ''
-      } )
+      _this._setStyle( itemEl, itemEl._psStyleCopy )
 
       rootEl.appendChild( itemEl )
     }
