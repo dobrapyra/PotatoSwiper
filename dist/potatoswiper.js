@@ -773,17 +773,15 @@ Object.assign( PotatoSwiper.prototype, {
     if( itemIdx < 0 ) itemIdx = loopCfg ? maxIdx : 0
     
     newL = -psItemsArr[ itemIdx ]._psItemL
-    newX += newL + psItemsArr[ _this._currIdx ]._psItemL
+    newX -= newL + psItemsArr[ _this._currIdx ]._psItemL
 
     _this._setStyle( psItems, {
       left: newL + 'px'
     } )
-    _this._updatePos( -newX )
-    _this._move.d = -newX
-
-    _this._currIdx = itemIdx
-
+    _this._move.d = newX
     _this._animPos( _this._cfg.duration )
+  
+    _this._currIdx = itemIdx
   },
 
   _restoreHtml: function() {
