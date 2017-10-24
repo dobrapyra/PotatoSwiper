@@ -1,6 +1,12 @@
 body, html {
   margin: 0;
   padding: 0;
+  font-family: Tahoma, Arial;
+}
+
+button {
+  font-family: Tahoma, Arial;
+  cursor: pointer;
 }
 
 * {
@@ -14,9 +20,9 @@ body, html {
   margin: 0 auto;
 }
 
-/* .slider {
-
-} */
+.slider {
+  margin: 40px 0;
+}
 
 .slider__items {
   position: relative;
@@ -77,9 +83,37 @@ body, html {
   text-align: center;
 }
 
+.slider__nav {
+  border: 0;
+  min-width: 80px;
+  padding: 6px 4px;
+  font-size: 14px;
+  line-height: 16px;
+  background-color: #333;
+  color: #fff;
+}
+
+.slider__nav:hover {
+  background-color: #666;
+}
+
 .slider__pageNavs {
   margin-top: 20px;
   text-align: center;
+}
+
+.slider__pageNav {
+  border: 0;
+  width: 20px;
+  padding: 3px 4px;
+  font-size: 12px;
+  line-height: 14px;
+  background-color: #333;
+  color: #fff;
+}
+
+.slider__pageNav:hover {
+  background-color: #666;
 }
 
 /* @media only screen and (max-width: 768px) {
