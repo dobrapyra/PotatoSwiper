@@ -73,15 +73,17 @@ Object.assign( PotatoSwiper.prototype, {
     _this._currIdx = 0
     _this._maxIdx = 0
 
-    _this._move = {
-      d: 0, // diff
-      b: null // begin
-    }
-
+    _this._firstL = 0
+    _this._loopW = 0
     _this._psX = 0
     _this._psD = 0
 
     // _this._lastTarget = null
+
+    _this._move = {
+      d: 0, // diff
+      b: null // begin
+    }
 
     _this._inLoop = false
     _this._raf = null
@@ -246,6 +248,8 @@ Object.assign( PotatoSwiper.prototype, {
 
     rootEl.appendChild( psRoot )
 
+    _this._firstL = psItemsArr[0]._psItemL
+    _this._loopW = allW
     if( cfg.loop ) allW = _this._cloneItems( allW )
 
     setStyle( psItems, {
@@ -574,7 +578,11 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   _updatePos: function( x ) {
-    var _this = this
+    var _this = this,
+      loopW = _this._loopW
+
+    x = x % loopW
+    // x = ( ( ( x % loopW ) + loopW ) % loopW ) - loopW
 
     _this._psX = x
     _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
