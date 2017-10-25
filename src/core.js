@@ -78,6 +78,9 @@ Object.assign( PotatoSwiper.prototype, {
       b: null // begin
     }
 
+    _this._psX = 0
+    _this._psD = 0
+
     // _this._lastTarget = null
 
     _this._inLoop = false
@@ -525,6 +528,7 @@ Object.assign( PotatoSwiper.prototype, {
     // _this._lastTarget = e.target.closest( 'a[href], button' )
 
     _this._move.b = touch ? touch.clientX : e.clientX
+    _this._psD = _this._psX
 
     rootStyle.userSelect = 'none'
     rootStyle.pointerEvents = 'none'
@@ -538,16 +542,18 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._move.d = touch ? touch.clientX - _this._move.b : e.clientX - _this._move.b
 
-    _this._updatePos( _this._move.d )
+    _this._updatePos( _this._psD + _this._move.d )
   },
 
   _moveEnd: function() {
     var _this = this,
       rootStyle = _this._rootEl.style,
       dir = ( _this._move.d > _this._treashold ) ? 1 : ( _this._move.d < -_this._treashold ) ? -1 : 0
-
+     
     _this._move.b = null
-    // _this._move.d = 0
+    _this._move.d = 0
+
+    _this._psD = _this._psX
 
     rootStyle.userSelect = ''
     rootStyle.pointerEvents = ''
@@ -568,11 +574,10 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   _updatePos: function( x ) {
-    var _this = this,
-      psItems = _this._psItems
+    var _this = this
 
-    psItems._psItemsX = x
-    psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
+    _this._psX = x
+    _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
   },
 
   _animPos: function( duration ) {
@@ -629,7 +634,7 @@ Object.assign( PotatoSwiper.prototype, {
 
     fract = _this._easing[ _this._cfg.easing ]( fract )
 
-    _this._updatePos( ( 1 - fract ) * _this._move.d )
+    _this._updatePos( ( 1 - fract ) * _this._psD )
   },
 
   _setRaf: function( fn ) {
@@ -654,6 +659,7 @@ Object.assign( PotatoSwiper.prototype, {
   goBy: function( offset ) {
     var _this = this
 
+    _this._psD = _this._psX
     _this.goTo( _this._currIdx + offset )
   },
 
@@ -663,7 +669,6 @@ Object.assign( PotatoSwiper.prototype, {
       psItems = _this._psItems,
       maxIdx = _this._maxIdx,
       loopCfg = _this._cfg.loop,
-      newX = psItems._psItemsX,
       newL = 0
 
     if( itemIdx === _this._currIdx ) return
@@ -672,12 +677,11 @@ Object.assign( PotatoSwiper.prototype, {
     if( itemIdx < 0 ) itemIdx = loopCfg ? maxIdx : 0
     
     newL = -psItemsArr[ itemIdx ]._psItemL
-    newX -= newL + psItemsArr[ _this._currIdx ]._psItemL
+    _this._psD -= newL + psItemsArr[ _this._currIdx ]._psItemL
 
     _this._setStyle( psItems, {
       left: newL + 'px'
     } )
-    _this._move.d = newX
     _this._animPos( _this._cfg.duration )
   
     _this._currIdx = itemIdx
