@@ -172,6 +172,7 @@ Object.assign( PotatoSwiper.prototype, {
     _this._treashold = 20
 
     _this._currIdx = 0
+    _this._allIdx = 0
     _this._maxIdx = 0
 
     _this._firstL = 0
@@ -341,7 +342,8 @@ Object.assign( PotatoSwiper.prototype, {
       psItem._psItemSize += itemSize
     }
 
-    _this._maxIdx = psItemsArr.length - 1
+    _this._allIdx = psItemsArr.length
+    _this._maxIdx = _this._allIdx - 1
 
     _this._psItemsArr = psItemsArr
     _this._psItems = psItems
@@ -688,8 +690,8 @@ Object.assign( PotatoSwiper.prototype, {
       loopW = _this._loopW,
       currX = _this._currX
 
-    // x = ( ( ( ( x + loopW ) % loopW ) - ( currX + loopW ) ) % loopW ) + currX // with negative modulo
-    x = ( ( ( ( x + loopW + loopW ) % loopW ) + loopW - currX ) % loopW ) + currX - loopW
+    x = ( ( ( ( x + loopW + loopW ) % loopW ) + loopW - currX ) % loopW ) + currX
+    x = ( x > 0 ) ? x - loopW : x
 
     _this._psX = x
     _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
@@ -782,25 +784,26 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       psItemsArr = _this._psItemsArr,
       psItems = _this._psItems,
+      allIdx = _this._allIdx,
       maxIdx = _this._maxIdx,
       loopCfg = _this._cfg.loop,
-      newL = 0
+      modIdx, loops, newL = 0
 
     if( itemIdx === _this._currIdx ) return
 
-    if( itemIdx > maxIdx ) itemIdx = loopCfg ? 0 : maxIdx
-    if( itemIdx < 0 ) itemIdx = loopCfg ? maxIdx : 0
-    
-    newL = -psItemsArr[ itemIdx ]._psItemL
-    _this._psD -= newL + psItemsArr[ _this._currIdx ]._psItemL
+    modIdx = loopCfg ? ( ( itemIdx + allIdx ) % allIdx ) : ( itemIdx > maxIdx ) ? maxIdx : ( itemIdx < 0 ) ? 0 : itemIdx
+    loops = ( itemIdx - modIdx ) / allIdx
+
+    newL = -psItemsArr[ modIdx ]._psItemL
+    _this._psD = -( newL + psItemsArr[ _this._currIdx ]._psItemL - ( loops * _this._loopW ) ) + _this._psX
 
     _this._setStyle( psItems, {
       left: newL + 'px'
     } )
     _this._animPos( _this._cfg.duration )
   
-    _this._currIdx = itemIdx
-    _this._currX = _this._psItemsArr[ itemIdx ]._psItemX
+    _this._currIdx = modIdx
+    _this._currX = _this._psItemsArr[ modIdx ]._psItemX
   },
 
   _restoreHtml: function() {
