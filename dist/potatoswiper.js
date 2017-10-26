@@ -176,6 +176,7 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._firstL = 0
     _this._loopW = 0
+    _this._currX = 0
     _this._psX = 0
     _this._psD = 0
 
@@ -362,7 +363,7 @@ Object.assign( PotatoSwiper.prototype, {
       height: ''
     } )
 
-    _this._cacheLeft()
+    _this._cacheItemsData()
 
     setStyle( psItems, {
       left: -psItemsArr[ _this._currIdx ]._psItemL + 'px'
@@ -430,17 +431,21 @@ Object.assign( PotatoSwiper.prototype, {
     return cloneItem
   },
 
-  _cacheLeft: function() {
+  _cacheItemsData: function() {
     var _this = this,
       psItemsArr = _this._psItemsArr,
       getElL = _this._getElL,
       i = 0, l = psItemsArr.length,
+      firstL = getElL( psItemsArr[ 0 ] ),
       psItem
-    
+
     for( ; i < l; i++ ) {
       psItem = psItemsArr[ i ]
       psItem._psItemL = getElL( psItem )
+      psItem._psItemX = psItem._psItemL - firstL
     }
+
+    _this._firstL = firstL
   },
 
   _bindEvents: function() {
@@ -680,10 +685,11 @@ Object.assign( PotatoSwiper.prototype, {
 
   _updatePos: function( x ) {
     var _this = this,
-      loopW = _this._loopW
+      loopW = _this._loopW,
+      currX = _this._currX
 
-    x = x % loopW
-    // x = ( ( ( x % loopW ) + loopW ) % loopW ) - loopW
+    // x = ( ( ( ( x + loopW ) % loopW ) - ( currX + loopW ) ) % loopW ) + currX // with negative modulo
+    x = ( ( ( ( x + loopW + loopW ) % loopW ) + loopW - currX ) % loopW ) + currX - loopW
 
     _this._psX = x
     _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
@@ -794,6 +800,7 @@ Object.assign( PotatoSwiper.prototype, {
     _this._animPos( _this._cfg.duration )
   
     _this._currIdx = itemIdx
+    _this._currX = _this._psItemsArr[ itemIdx ]._psItemX
   },
 
   _restoreHtml: function() {
