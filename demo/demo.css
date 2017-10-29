@@ -58,6 +58,9 @@ button {
 .slider__item--c7 { background-color: #558B2F; }
 .slider__item--c8 { background-color: #d1b828; }
 
+/* debug */
+/* .potatoSwiper__item--clone > .slider__item { background-color: #333; } */
+
 .slider__item::after {
   content: '';
   display: inline-block;

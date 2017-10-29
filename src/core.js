@@ -588,9 +588,13 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       loopW = _this._loopW,
       currX = _this._currX
+    
+    // console.log( 'before', x )
 
-    x = ( ( ( ( x + loopW + loopW ) % loopW ) + loopW - currX ) % loopW ) + currX
-    x = ( x > 0 ) ? x - loopW : x
+    x = ( ( x % loopW + loopW ) % loopW - currX ) % loopW + currX
+    x = ( x > currX ) ? x - loopW : x
+
+    // console.log( 'after', x )
 
     _this._psX = x
     _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
@@ -690,8 +694,10 @@ Object.assign( PotatoSwiper.prototype, {
 
     if( itemIdx === _this._currIdx ) return
 
-    modIdx = loopCfg ? ( ( itemIdx + allIdx ) % allIdx ) : ( itemIdx > maxIdx ) ? maxIdx : ( itemIdx < 0 ) ? 0 : itemIdx
+    modIdx = loopCfg ? ( ( itemIdx % allIdx + allIdx ) % allIdx ) : ( itemIdx > maxIdx ) ? maxIdx : ( itemIdx < 0 ) ? 0 : itemIdx
     loops = ( itemIdx - modIdx ) / allIdx
+
+    console.log( 'modIdx', modIdx )
 
     newL = -psItemsArr[ modIdx ]._psItemL
     _this._psD = -( newL + psItemsArr[ _this._currIdx ]._psItemL - ( loops * _this._loopW ) ) + _this._psX
