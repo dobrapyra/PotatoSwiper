@@ -177,7 +177,7 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._firstL = 0
     _this._loopW = 0
-    _this._currX = 0
+    _this._currItemX = 0
     _this._psX = 0
     _this._psD = 0
 
@@ -688,14 +688,10 @@ Object.assign( PotatoSwiper.prototype, {
   _updatePos: function( x ) {
     var _this = this,
       loopW = _this._loopW,
-      currX = _this._currX
+      currItemX = _this._currItemX
     
-    // console.log( 'before', x )
-
-    x = ( ( x % loopW + loopW ) % loopW - currX ) % loopW + currX
-    x = ( x > currX ) ? x - loopW : x
-
-    // console.log( 'after', x )
+    x = ( ( x % loopW + loopW ) % loopW - currItemX ) % loopW + currItemX
+    x = ( x > currItemX ) ? x - loopW : x
 
     _this._psX = x
     _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
@@ -784,32 +780,34 @@ Object.assign( PotatoSwiper.prototype, {
     _this.goTo( _this._currIdx + offset )
   },
 
-  goTo: function( itemIdx ) {
+  goTo: function( targetIdx ) {
     var _this = this,
       psItemsArr = _this._psItemsArr,
       psItems = _this._psItems,
       allIdx = _this._allIdx,
       maxIdx = _this._maxIdx,
       loopCfg = _this._cfg.loop,
-      modIdx, loops, newL = 0
+      loopW = _this._loopW,
+      modIdx, loops, moveForward, currItemsL = 0
 
-    if( itemIdx === _this._currIdx ) return
+    if( targetIdx === _this._currIdx ) return
 
-    modIdx = loopCfg ? ( ( itemIdx % allIdx + allIdx ) % allIdx ) : ( itemIdx > maxIdx ) ? maxIdx : ( itemIdx < 0 ) ? 0 : itemIdx
-    loops = ( itemIdx - modIdx ) / allIdx
+    moveForward = targetIdx > _this._currIdx
 
-    console.log( 'modIdx', modIdx )
+    modIdx = loopCfg ? ( ( targetIdx % allIdx + allIdx ) % allIdx ) : ( targetIdx > maxIdx ) ? maxIdx : ( targetIdx < 0 ) ? 0 : targetIdx
+    loops = ( targetIdx - modIdx ) / allIdx
 
-    newL = -psItemsArr[ modIdx ]._psItemL
-    _this._psD = -( newL + psItemsArr[ _this._currIdx ]._psItemL - ( loops * _this._loopW ) ) + _this._psX
+    currItemsL = -psItemsArr[ modIdx ]._psItemL
+    _this._psD = -( currItemsL + psItemsArr[ _this._currIdx ]._psItemL - ( loops * loopW ) ) + _this._psX
+    _this._psD += ( moveForward && _this._psX < 0 ) ? loopW : 0
 
     _this._setStyle( psItems, {
-      left: newL + 'px'
+      left: currItemsL + 'px'
     } )
     _this._animPos( _this._cfg.duration )
-  
+
     _this._currIdx = modIdx
-    _this._currX = _this._psItemsArr[ modIdx ]._psItemX
+    _this._currItemX = _this._psItemsArr[ modIdx ]._psItemX
   },
 
   _restoreHtml: function() {
