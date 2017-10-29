@@ -169,7 +169,7 @@ Object.assign( PotatoSwiper.prototype, {
     }, cfg )
     _this._cfg = {}
 
-    _this._treashold = 20
+    _this._threshold = 20
 
     _this._currIdx = 0
     _this._allIdx = 0
@@ -352,7 +352,7 @@ Object.assign( PotatoSwiper.prototype, {
 
     rootEl.appendChild( psRoot )
 
-    _this._firstL = psItemsArr[0]._psItemL
+    _this._firstL = psItemsArr[ 0 ]._psItemL
     _this._loopW = allW
     if( cfg.loop ) allW = _this._cloneItems( allW )
 
@@ -416,7 +416,7 @@ Object.assign( PotatoSwiper.prototype, {
     while( clonesW < wrapW ) {
       psItem = psItemsArr[ ( i + l ) % l ]
       clonesW += getElW( psItem )
-      psItems.insertBefore( cloneItem( psItem ), psItems.children[0] )
+      psItems.insertBefore( cloneItem( psItem ), psItems.children[ 0 ] )
       i--
     }
     allW += clonesW
@@ -659,9 +659,15 @@ Object.assign( PotatoSwiper.prototype, {
 
   _moveEnd: function() {
     var _this = this,
+      psItemsArr = _this._psItemsArr,
       rootStyle = _this._rootEl.style,
-      dir = ( _this._move.d > _this._treashold ) ? 1 : ( _this._move.d < -_this._treashold ) ? -1 : 0
-     
+      threshold = _this._threshold,
+      moveD = _this._move.d,
+      // loopCfg = _this._cfg.loop,
+      i = 1, l = psItemsArr.length,
+      diffA, diffB,
+      negativeX, closestItem = null
+
     _this._move.b = null
     _this._move.d = 0
 
@@ -670,12 +676,23 @@ Object.assign( PotatoSwiper.prototype, {
     rootStyle.userSelect = ''
     rootStyle.pointerEvents = ''
 
-    if( dir !== 0 ) {
-      if( dir < 0 ) {
-        _this.next()
-      } else {
-        _this.prev()
+    if( moveD > threshold || moveD < -threshold ) {
+
+      negativeX = _this._currItemX - _this._psX
+
+      for( ; i <= l; i++ ) {
+        diffA = negativeX - psItemsArr[ i - 1 ]._psItemX
+        diffB = i !== l ? negativeX - psItemsArr[ i ]._psItemX : negativeX - _this._loopW
+
+        if( diffA > 0 && diffB < 0 ) {
+          closestItem = ( ( diffA < -diffB ) ? i - 1 : i ) % l
+          break
+        }
       }
+
+      _this.goTo( closestItem )
+
+      // _this._animPos( _this._cfg.duration )
     } else {
       // if( _this._lastTarget ) {
       //   _this._lastTarget.click()
@@ -689,7 +706,7 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       loopW = _this._loopW,
       currItemX = _this._currItemX
-    
+
     x = ( ( x % loopW + loopW ) % loopW - currItemX ) % loopW + currItemX
     x = ( x > currItemX ) ? x - loopW : x
 
@@ -790,7 +807,10 @@ Object.assign( PotatoSwiper.prototype, {
       loopW = _this._loopW,
       modIdx, loops, moveForward, currItemsL = 0
 
-    if( targetIdx === _this._currIdx ) return
+    if( targetIdx === _this._currIdx ) {
+      _this._animPos( _this._cfg.duration )
+      return
+    }
 
     moveForward = targetIdx > _this._currIdx
 
