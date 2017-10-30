@@ -2,7 +2,7 @@
   "name": "potatoswiper",
   "version": "1.0.0",
   "description": "PotatoSwiper - pure js carousel / slider",
-  "main": "potatoslider.js",
+  "main": "potatoswiper.js",
   "scripts": {},
   "repository": {
     "type": "git",
