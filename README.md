@@ -1,5 +1,5 @@
 # Potato Swiper
-Pure JS carousel
+Pure JS lightweight carousel
 ## Features
 * No Dependencies
 * Responsive
