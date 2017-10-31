@@ -16,6 +16,7 @@ ready( function() {
     // items: 3,
     // perItem: 2
     // duration: 2000,
+    gap: 20,
     items: 1,
     rwd: {
       420: {
