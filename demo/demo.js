@@ -15,6 +15,7 @@ ready( function() {
     // autoWidth: true
     // items: 3,
     // perItem: 2
+    // duration: 2000,
     items: 1,
     rwd: {
       420: {

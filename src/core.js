@@ -559,44 +559,61 @@ Object.assign( PotatoSwiper.prototype, {
   _moveEnd: function() {
     var _this = this,
       psItemsArr = _this._psItemsArr,
+      psItems = _this._psItems,
       rootStyle = _this._rootEl.style,
       threshold = _this._threshold,
       moveD = _this._move.d,
+      loopW = _this._loopW,
       // loopCfg = _this._cfg.loop,
       i = 1, l = psItemsArr.length,
-      diffA, diffB,
-      negativeX, closestItem = null
+      diffA, diffB, diffX,
+      currItemsL, currItemsX,
+      modX, closestIdx = null
 
     _this._move.b = null
     _this._move.d = 0
-
-    _this._psD = _this._psX
 
     rootStyle.userSelect = ''
     rootStyle.pointerEvents = ''
 
     if( moveD > threshold || moveD < -threshold ) {
-
-      negativeX = _this._currItemX - _this._psX
-
+      modX = _this._currItemX - ( _this._psD + moveD )
+      modX = ( modX % loopW + loopW ) % loopW
+      
       for( ; i <= l; i++ ) {
-        diffA = negativeX - psItemsArr[ i - 1 ]._psItemX
-        diffB = i !== l ? negativeX - psItemsArr[ i ]._psItemX : negativeX - _this._loopW
+        diffA = modX - psItemsArr[ i - 1 ]._psItemX
+        diffB = i !== l ? modX - psItemsArr[ i ]._psItemX : modX - loopW
 
         if( diffA > 0 && diffB < 0 ) {
-          closestItem = ( ( diffA < -diffB ) ? i - 1 : i ) % l
+          if( diffA < -diffB ) {
+            closestIdx = i - 1
+            diffX = diffA
+          } else {
+            closestIdx = i
+            diffX = diffB
+          }
+          closestIdx %= l
           break
         }
       }
 
-      _this.goTo( closestItem )
+      currItemsL = -psItemsArr[ closestIdx ]._psItemL
+      currItemsX = psItemsArr[ closestIdx ]._psItemX
+      _this._psD = -diffX
 
-      // _this._animPos( _this._cfg.duration )
+      _this._setStyle( psItems, {
+        left: currItemsL + 'px'
+      } )
+      _this._animPos( _this._cfg.duration )
+
+      _this._currIdx = closestIdx
+      _this._currItemX = currItemsX
     } else {
       // if( _this._lastTarget ) {
       //   _this._lastTarget.click()
       //   _this._lastTarget = null
       // }
+      _this._psD = _this._psX
       _this._animPos( _this._cfg.duration )
     }
   },
@@ -704,21 +721,19 @@ Object.assign( PotatoSwiper.prototype, {
       maxIdx = _this._maxIdx,
       loopCfg = _this._cfg.loop,
       loopW = _this._loopW,
-      modIdx, loops, moveForward, currItemsL = 0
+      modIdx, loops, currItemsL = 0
 
     if( targetIdx === _this._currIdx ) {
       _this._animPos( _this._cfg.duration )
       return
     }
 
-    moveForward = targetIdx > _this._currIdx
-
     modIdx = loopCfg ? ( ( targetIdx % allIdx + allIdx ) % allIdx ) : ( targetIdx > maxIdx ) ? maxIdx : ( targetIdx < 0 ) ? 0 : targetIdx
     loops = ( targetIdx - modIdx ) / allIdx
 
     currItemsL = -psItemsArr[ modIdx ]._psItemL
     _this._psD = -( currItemsL + psItemsArr[ _this._currIdx ]._psItemL - ( loops * loopW ) ) + _this._psX
-    _this._psD += ( moveForward && _this._psX < 0 ) ? loopW : 0
+    _this._psD += ( ( targetIdx > _this._currIdx ) && _this._psX < 0 ) ? loopW : 0
 
     _this._setStyle( psItems, {
       left: currItemsL + 'px'
