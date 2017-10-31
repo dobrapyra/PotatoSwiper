@@ -101,7 +101,7 @@
 /**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-10-24
+ * Version: 2017-10-31
  */
 
 var PotatoSwiper = function( rootEl, cfg ) {
