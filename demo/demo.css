@@ -87,6 +87,7 @@ button {
 
 .slider__navs {
   margin-top: 20px;
+  font-size: 0;
   text-align: center;
 }
 
@@ -94,6 +95,7 @@ button {
   border: 0;
   min-width: 80px;
   padding: 6px 4px;
+  margin: 0 4px;
   font-size: 14px;
   line-height: 16px;
   background-color: #333;
@@ -106,6 +108,7 @@ button {
 
 .slider__dots {
   margin-top: 20px;
+  font-size: 0;
   text-align: center;
 }
 
@@ -113,6 +116,7 @@ button {
   border: 0;
   width: 20px;
   padding: 3px 4px;
+  margin: 0 4px;
   font-size: 12px;
   line-height: 14px;
   background-color: #333;
