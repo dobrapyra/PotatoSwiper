@@ -58,7 +58,7 @@ Object.assign( PotatoSwiper.prototype, {
       navScopeEl: rootEl.parentElement,
       prevSelector: '[data-ps-prev]',
       nextSelector: '[data-ps-next]',
-      gap: 0,
+      gap: 0, // px
       largeSize: 2,
       largeSelector: '[data-ps-large]',
       duration: 500, // ms
@@ -204,13 +204,10 @@ Object.assign( PotatoSwiper.prototype, {
         psItemW = getElW( itemEl )
         itemElW = '100%'
       } else {
-        // psItemW = Math.floor( ( rootW - ( ( cfg.items - 1 ) * cfg.gap ) ) * 100 / cfg.items ) / 100
-        // psItemW = Math.floor( ( rootW + cfg.gap ) * 100 / cfg.items ) / 100
-        // psItemW += cfg.gap
         psItemW = Math.floor( ( rootW + gap ) * 100 / cfg.items ) / 100
         itemElW = ''
       }
-// console.log(psItemW)
+
       if( itemsCount % cfg.perItem === 0 ) {
         psItem = createEl( 'div', '__item', {
           position: 'relative',
@@ -218,7 +215,6 @@ Object.assign( PotatoSwiper.prototype, {
           verticalAlign: 'middle',
           top: 0,
           left: 0,
-          // width: psItemW + 'px'
           width: ( psItemW - gap ) + 'px',
           marginRight: gap + 'px' 
         }, psItems )
@@ -268,6 +264,9 @@ Object.assign( PotatoSwiper.prototype, {
     } )
 
     _this._cacheItemsData()
+
+    if( _this._currIdx > _this._maxIdx ) _this._currIdx = _this._maxIdx
+    _this._currItemX = psItemsArr[ _this._currIdx ]._psItemX
 
     setStyle( psItems, {
       left: -psItemsArr[ _this._currIdx ]._psItemL + 'px'
