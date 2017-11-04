@@ -126,6 +126,9 @@ button {
 .slider__dot:hover {
   background-color: #666;
 }
+.slider__dot--active {
+  background-color: #aaa;
+}
 
 /* @media only screen and (max-width: 768px) {
   .slider__slide {

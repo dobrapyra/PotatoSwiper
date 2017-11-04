@@ -27,6 +27,9 @@ var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items-
   prevSelector: '.slider__nav--prev',
   nextSelector: '.slider__nav--next',
   dotSelector: '.slider__dot',
+  class: {
+    activeDot: 'slider__dot--active'
+  },
   gap: 20,
   items: 1,
   rwd: {
@@ -93,6 +96,9 @@ var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider_
   prevSelector: '.slider__nav--prev',
   nextSelector: '.slider__nav--next',
   dotSelector: '.slider__dot',
+  class: {
+    activeDot: 'slider__dot--active'
+  },
   items: 1,
   perItem: 1,
   largeSelector: '.slider__item--large',
@@ -168,7 +174,8 @@ var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider_
   prevSelector: '[data-ps-prev]',
   nextSelector: '[data-ps-next]',
   dotSelector: '[data-ps-dot]',
-  gap: 0,
+  class: {},
+  gap: 0, // px
   largeSize: 2,
   largeSelector: '[data-ps-large]',
   duration: 500, // ms

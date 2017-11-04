@@ -13,6 +13,9 @@ ready( function() {
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
     dotSelector: '.slider__dot',
+    class: {
+      activeDot: 'slider__dot--active'
+    },
     // autoWidth: true
     // items: 3,
     // perItem: 2
@@ -37,6 +40,9 @@ ready( function() {
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
     dotSelector: '.slider__dot',
+    class: {
+      activeDot: 'slider__dot--active'
+    },
     items: 1,
     perItem: 1,
     largeSelector: '.slider__item--large',

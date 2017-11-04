@@ -1,53 +1,68 @@
 ( function() {
 
+  if( !Array.prototype.indexOf ) {
+    Array.prototype.indexOf = function( el, from ) {
+
+      var arr = this, i, l = arr.length
+
+      from = from || 0
+
+      for( i = from; i < l; i++ ) {
+        if( arr[ i ] === el ) return i
+      }
+
+      return -1
+    }
+  }
+
   if( !Object.keys ) {
     Object.keys = function( obj ) {
       // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
-  
+
       var keysArr = [], key
-  
+
       for( key in obj ) {
         if( obj.hasOwnProperty( key ) ) keysArr.push( key )
       }
-  
+
       return keysArr
     }
   }
-  
+
   if( !Object.assign ) {
     Object.assign = function( obj ) {
       // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
-  
+
       var resultObj = Object( obj ), tmpSource, keysArr, i, l, j, k, tmpKey
-  
+
       for( i = 1, l = arguments.length; i < l; i++ ) {
         tmpSource = arguments[ i ]
-  
+
         if( !tmpSource ) continue
-  
+
         keysArr = Object.keys( tmpSource )
-  
+
         for( j = 0, k = keysArr.length; j < k; j++ ) {
           tmpKey = keysArr[ j ]
-  
+
           resultObj[ tmpKey ] = tmpSource[ tmpKey ]
         }
       }
-  
+
       return resultObj
     }
   }
-  
+
   if( !Function.prototype.bind ) {
     Function.prototype.bind = function( ctx ) {
       var fn = this, args = Array.prototype.slice.call( arguments, 1 )
-  
+
       return function() {
         fn.apply( ctx, args )
       }
     }
   }
-  
+
   if( !Element.prototype.matches ) {
     var elPrototype = Element.prototype
     elPrototype.matches = ( function() {
@@ -60,16 +75,16 @@
         function( selector ) {
           var matches = document.querySelectorAll( selector ),
             mi, ml = matches.length
-  
+
           for( mi = 0; mi < ml; mi++ ) {
             if( matches[ mi ] === this ) return true
           }
-  
+
           return false
         }
     } )()
   }
-  
+
   var win = window
 
   if( !window.requestAnimationFrame ) {
@@ -84,7 +99,7 @@
         }
     } )()
   }
-  
+
   if( !window.cancelAnimationFrame ) {
     win.cancelAnimationFrame = ( function() {
       return win.cancelAnimationFrame ||
@@ -166,6 +181,7 @@ Object.assign( PotatoSwiper.prototype, {
       threshold: 20, // px
       easing: 'easeOutCubic',
       rwdMobileFirst: true,
+      class: {},
       rwd: {}
     }, cfg )
     _this._cfg = {}
@@ -370,7 +386,7 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._cacheItemsData()
 
-    if( _this._currIdx > _this._maxIdx ) _this._currIdx = _this._maxIdx
+    if( _this._currIdx > _this._maxIdx ) _this._setCurrIdx( _this._maxIdx )
     _this._currItemX = psItemsArr[ _this._currIdx ]._psItemX
 
     setStyle( psItems, {
@@ -389,7 +405,8 @@ Object.assign( PotatoSwiper.prototype, {
       psItemW, pageW, page = 0,
       wrapGapW = _this._getElW( _this._psWrap ) + cfg.gap,
       dot, dotsEl, dotTpl = _this._getEl( cfg.dotSelector, cfg.scopeEl )
-
+    
+    _this._dotsArr = []
     if( dotTpl ) {
       dotTpl._psPageGoTo = 0
 
@@ -415,7 +432,11 @@ Object.assign( PotatoSwiper.prototype, {
           dotsEl.appendChild( dot )
         }
       }
+
+      _this._dotsArr = dotsEl.children
     }
+
+    _this._setCurrIdx( _this._currIdx )
   },
 
   _getNav: function() {
@@ -434,7 +455,7 @@ Object.assign( PotatoSwiper.prototype, {
 
   _cloneItems: function( allW ) {
     var _this = this,
-      cloneItem = _this._cloneItem,
+      cloneItem = _this._cloneItem.bind( this ),
       psItems = _this._psItems,
       psItemsArr = _this._psItemsArr,
       psItem, clonesW,
@@ -467,10 +488,9 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   _cloneItem: function( item ) {
-    var itemClass = item.getAttribute( 'class' ),
-      cloneItem = item.cloneNode( true )
+    var cloneItem = item.cloneNode( true )
 
-    cloneItem.setAttribute( 'class', itemClass + ' ' + itemClass + '--clone' )
+    this._addClass( cloneItem, item.getAttribute( 'class' ) + '--clone' )
 
     return cloneItem
   },
@@ -603,6 +623,42 @@ Object.assign( PotatoSwiper.prototype, {
     this.init()
   },
 
+  _hasClass: function( el, className ) {  
+    var classList = el.classList
+
+    return classList ?
+      classList.contains( className ) :
+      el.className.split( ' ' ).indexOf( className ) >= 0
+  },
+
+  _addClass: function( el, className ) {
+    var classList = el.classList
+
+    if( classList ) {
+      classList.add( className )
+    } else {
+      if( this._hasClass( className ) ) return
+  
+      classList = el.className.split( ' ' )
+      classList.push( className )
+      el.className = classList.join( ' ' )
+    }
+  },
+
+  _remClass: function( el, className ) {
+    var classList = el.classList
+  
+    if( classList ) {
+      classList.remove( className )
+    } else {
+      if( !el.hasClass( className ) ) return
+  
+      classList = el.className.split( ' ' )
+      classList.splice( classList.indexOf( className ) )
+      el.className = classList.join( ' ' )
+    }
+  },
+
   _addEvent: function( el, eventName, fn ) {
     var _this = this,
       psRoot, elEvents
@@ -648,7 +704,7 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       el = document.createElement( selector )
 
-    el.setAttribute( 'class', _this._cfg.nameSpace + elClassSuffix )
+    _this._addClass( el, _this._cfg.nameSpace + elClassSuffix )
     _this._setStyle( el, styleObj )
 
     if( parentEl ) parentEl.appendChild( el )
@@ -750,7 +806,7 @@ Object.assign( PotatoSwiper.prototype, {
       } )
       _this._animPos( _this._cfg.duration )
 
-      _this._currIdx = closestIdx
+      _this._setCurrIdx( closestIdx )
       _this._currItemX = currItemsX
     } else {
       // if( _this._lastTarget ) {
@@ -831,6 +887,26 @@ Object.assign( PotatoSwiper.prototype, {
     _this._updatePos( ( 1 - fract ) * _this._psD )
   },
 
+  _setCurrIdx: function( idx ) {
+    var _this = this,
+      activeDotClass = _this._cfg.class.activeDot,
+      dotsArr = _this._dotsArr,
+      i = 0, l = dotsArr.length,
+      dot, active
+
+    _this._currIdx = idx
+
+    for( ; i < l; i++ ) {
+      dot = dotsArr[ i ]
+
+      _this._remClass( dot, activeDotClass )
+
+      if( dot._psPageGoTo <= idx ) active = i
+    }
+
+    _this._addClass( dotsArr[ active ], activeDotClass )
+  },
+
   _setRaf: function( fn ) {
     var _this = this
 
@@ -881,7 +957,7 @@ Object.assign( PotatoSwiper.prototype, {
     } )
     _this._animPos( _this._cfg.duration )
 
-    _this._currIdx = modIdx
+    _this._setCurrIdx( modIdx )
     _this._currItemX = _this._psItemsArr[ modIdx ]._psItemX
   },
 
