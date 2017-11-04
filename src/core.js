@@ -62,7 +62,7 @@ Object.assign( PotatoSwiper.prototype, {
       largeSize: 2,
       largeSelector: '[data-ps-large]',
       duration: 500, // ms
-      threshold: 20,
+      threshold: 20, // px
       easing: 'easeOutCubic',
       rwdMobileFirst: true,
       rwd: {}
