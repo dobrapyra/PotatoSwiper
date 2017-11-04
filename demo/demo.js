@@ -12,6 +12,7 @@ ready( function() {
     loop: true,
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
+    dotSelector: '.slider__dot',
     // autoWidth: true
     // items: 3,
     // perItem: 2
@@ -35,7 +36,7 @@ ready( function() {
     loop: true,
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
-    gap: 20,
+    dotSelector: '.slider__dot',
     items: 1,
     perItem: 1,
     largeSelector: '.slider__item--large',

@@ -155,9 +155,10 @@ Object.assign( PotatoSwiper.prototype, {
       items: 1,
       perItem: 1,
       autoWidth: false,
-      navScopeEl: rootEl.parentElement,
+      scopeEl: rootEl.parentElement,
       prevSelector: '[data-ps-prev]',
       nextSelector: '[data-ps-next]',
+      dotSelector: '[data-ps-dot]',
       gap: 0, // px
       largeSize: 2,
       largeSelector: '[data-ps-large]',
@@ -252,8 +253,11 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   init: function() {
-    this._prepareHtml()
-    this._bindEvents()
+    var _this = this
+
+    _this._prepareHtml()
+    _this._prepareDots()
+    _this._bindEvents()
   },
 
   _prepareHtml: function() {
@@ -316,7 +320,7 @@ Object.assign( PotatoSwiper.prototype, {
           top: 0,
           left: 0,
           width: ( psItemW - gap ) + 'px',
-          marginRight: gap + 'px' 
+          marginRight: gap + 'px'
         }, psItems )
 
         psItemsArr.push( psItem )
@@ -326,13 +330,14 @@ Object.assign( PotatoSwiper.prototype, {
         allW += psItemW
       }
 
+      itemEl._psStyleCopy = Object.assign( {}, itemEl.style )
       setStyle( itemEl, {
         position: 'relative',
         top: 0,
         left: 0,
         width: itemElW,
         float: 'none'
-      }, true )
+      } )
       psItem.appendChild( itemEl )
 
       itemSize = _this._isLarge( itemEl ) ? cfg.largeSize : 1
@@ -376,14 +381,51 @@ Object.assign( PotatoSwiper.prototype, {
     _this._getNav()
   },
 
+  _prepareDots: function() {
+    var _this = this,
+      cfg = _this._cfg,
+      psItemsArr = _this._psItemsArr,
+      i = 0, l = psItemsArr.length,
+      psItemW, pageW, page = 0,
+      wrapGapW = _this._getElW( _this._psWrap ) + cfg.gap,
+      dot, dotsEl, dotTpl = _this._getEl( cfg.dotSelector, cfg.scopeEl )
+
+    if( dotTpl ) {
+      dotTpl._psPageGoTo = 0
+
+      _this._dotTpl = dot = dotTpl.cloneNode( true )
+      _this._dotsEl = dotsEl = dotTpl.parentElement
+      dotsEl.innerHTML = ''
+
+      pageW = wrapGapW
+      for( ; i < l; i++ ) {
+        psItemW = psItemsArr[ i ]._psItemW
+
+        pageW += psItemW
+        if( pageW > wrapGapW ) {
+          page++
+          pageW = psItemW
+          dot = dotTpl.cloneNode( true )
+          dot.innerHTML = dot.innerHTML.replace( /{{#}}/g, page )
+          dot._psPageGoTo = i
+          _this._addEvent( dot, 'click', function( e ) {
+            e.preventDefault()
+            _this.goTo( e.currentTarget._psPageGoTo )
+          } )
+          dotsEl.appendChild( dot )
+        }
+      }
+    }
+  },
+
   _getNav: function() {
     var _this = this,
       getEl = _this._getEl,
       cfg = _this._cfg,
-      navScopeEl = cfg.navScopeEl
+      scopeEl = cfg.scopeEl
 
-    _this._navPrev = getEl( cfg.prevSelector, navScopeEl )
-    _this._navNext = getEl( cfg.nextSelector, navScopeEl )
+    _this._navPrev = getEl( cfg.prevSelector, scopeEl )
+    _this._navNext = getEl( cfg.nextSelector, scopeEl )
   },
 
   _isLarge: function( itemEl ) {
@@ -614,18 +656,8 @@ Object.assign( PotatoSwiper.prototype, {
     return el
   },
 
-  _setStyle: function( el, styleObj, backup ) {
-    var elStyle = el.style,
-      styleKeys = Object.keys( styleObj ),
-      i = 0, l = styleKeys.length,
-      styleKey
-
-    el._psStyleCopy = el._psStyleCopy || {}
-    for( ; i < l; i++ ) {
-      styleKey = styleKeys[ i ]
-      if( backup == 1 ) el._psStyleCopy[ styleKey ] = elStyle[ styleKey ]
-      elStyle[ styleKey ] = styleObj[ styleKey ]
-    }
+  _setStyle: function( el, styleObj ) {
+    Object.assign( el.style, styleObj )
   },
 
   _moveBegin: function( e ) {
@@ -679,9 +711,9 @@ Object.assign( PotatoSwiper.prototype, {
     if( moveD > threshold || moveD < -threshold ) {
       modX = _this._currItemX - ( _this._psD + moveD )
       modX = ( modX % loopW + loopW ) % loopW + halfGap
-      
+
       for( ; i <= l; i++ ) {
-        diffA = modX - psItemsArr[ i - 1 ]._psItemX 
+        diffA = modX - psItemsArr[ i - 1 ]._psItemX
         diffB = i !== l ? modX - psItemsArr[ i ]._psItemX : modX - loopW
 
         if( diffA > 0 && diffB < 0 ) {
@@ -702,13 +734,13 @@ Object.assign( PotatoSwiper.prototype, {
           //   closestIdx = i
           //   diffX = diffB
           // }
-          
+
           closestIdx %= l
           break
         }
       }
 
-      
+
       currItemsL = -psItemsArr[ closestIdx ]._psItemL
       currItemsX = psItemsArr[ closestIdx ]._psItemX
       _this._psD = halfGap - diffX
@@ -835,10 +867,7 @@ Object.assign( PotatoSwiper.prototype, {
       loopW = _this._loopW,
       modIdx, loops, currItemsL = 0
 
-    if( targetIdx === _this._currIdx ) {
-      _this._animPos( _this._cfg.duration )
-      return
-    }
+    if( targetIdx === _this._currIdx ) return
 
     modIdx = loopCfg ? ( ( targetIdx % allIdx + allIdx ) % allIdx ) : ( targetIdx > maxIdx ) ? maxIdx : ( targetIdx < 0 ) ? 0 : targetIdx
     loops = ( targetIdx - modIdx ) / allIdx
@@ -854,6 +883,14 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._currIdx = modIdx
     _this._currItemX = _this._psItemsArr[ modIdx ]._psItemX
+  },
+
+  _restoreDots: function() {
+    var _this = this,
+      dotsEl = _this._dotsEl
+
+    dotsEl.innerHTML = ''
+    dotsEl.appendChild( _this._dotTpl.cloneNode( true ) )
   },
 
   _restoreHtml: function() {
@@ -874,8 +911,11 @@ Object.assign( PotatoSwiper.prototype, {
   },
 
   destroy: function() {
-    this._unbindEvents()
-    this._restoreHtml()
+    var _this = this
+
+    _this._unbindEvents()
+    _this._restoreDots()
+    _this._restoreHtml()
   }
 
 } )

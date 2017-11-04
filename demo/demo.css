@@ -104,12 +104,12 @@ button {
   background-color: #666;
 }
 
-.slider__pageNavs {
+.slider__dots {
   margin-top: 20px;
   text-align: center;
 }
 
-.slider__pageNav {
+.slider__dot {
   border: 0;
   width: 20px;
   padding: 3px 4px;
@@ -119,7 +119,7 @@ button {
   color: #fff;
 }
 
-.slider__pageNav:hover {
+.slider__dot:hover {
   background-color: #666;
 }
 

@@ -8,7 +8,7 @@
     <meta name="format-detection" content="telephone=no">
 
     <link rel="stylesheet" type="text/css" href="./demo/demo.css" />
-    <link href="./demo/prism.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="./demo/prism.css" />
 
   </head>
   <body>
@@ -26,6 +26,7 @@ var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items-
   loop: true,
   prevSelector: '.slider__nav--prev',
   nextSelector: '.slider__nav--next',
+  dotSelector: '.slider__dot',
   gap: 20,
   items: 1,
   rwd: {
@@ -77,8 +78,8 @@ var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items-
             <button class="slider__nav slider__nav--next">next</button>
           </div>
 
-          <div class="slider__pageNavs">
-            <button class="slider__pageNav">{{#}}</button>
+          <div class="slider__dots">
+            <button class="slider__dot">{{#}}</button>
           </div>
 
         </div>
@@ -91,7 +92,7 @@ var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider_
   loop: true,
   prevSelector: '.slider__nav--prev',
   nextSelector: '.slider__nav--next',
-  gap: 20,
+  dotSelector: '.slider__dot',
   items: 1,
   perItem: 1,
   largeSelector: '.slider__item--large',
@@ -146,8 +147,8 @@ var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider_
             <button class="slider__nav slider__nav--next">next</button>
           </div>
 
-          <div class="slider__pageNavs">
-            <button class="slider__pageNav">{{#}}</button>
+          <div class="slider__dots">
+            <button class="slider__dot">{{#}}</button>
           </div>
 
         </div>
@@ -163,9 +164,10 @@ var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider_
   items: 1,
   perItem: 1,
   autoWidth: false,
-  navScopeEl: rootEl.parentElement,
+  scopeEl: rootEl.parentElement,
   prevSelector: '[data-ps-prev]',
   nextSelector: '[data-ps-next]',
+  dotSelector: '[data-ps-dot]',
   gap: 0,
   largeSize: 2,
   largeSelector: '[data-ps-large]',
@@ -182,9 +184,9 @@ var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider_
       </div>
     </main>
 
-    <script type="text/javascript" src="./dist/potatoswiper.min.js"></script>
+    <script type="text/javascript" src="./dist/potatoswiper.js"></script>
     <script type="text/javascript" src="./demo/demo.js"></script>
-    <script src="./demo/prism.js"></script>
+    <script type="text/javascript" src="./demo/prism.js"></script>
     <script type="text/javascript" src="./src/debug.js"></script>
   </body>
 </html>
