@@ -340,7 +340,7 @@ Object.assign( PotatoSwiper.prototype, {
 
   _cloneItems: function( allW ) {
     var _this = this,
-      cloneItem = _this._cloneItem.bind( this ),
+      cloneItem = _this._cloneItem,
       psItems = _this._psItems,
       psItemsArr = _this._psItemsArr,
       psItem, clonesW,
@@ -375,7 +375,7 @@ Object.assign( PotatoSwiper.prototype, {
   _cloneItem: function( item ) {
     var cloneItem = item.cloneNode( true )
 
-    this._addClass( cloneItem, item.getAttribute( 'class' ) + '--clone' )
+    cloneItem.classList.add( item.getAttribute( 'class' ) + '--clone' )
 
     return cloneItem
   },
@@ -508,42 +508,6 @@ Object.assign( PotatoSwiper.prototype, {
     this.init()
   },
 
-  _hasClass: function( el, className ) {  
-    var classList = el.classList
-
-    return classList ?
-      classList.contains( className ) :
-      el.className.split( ' ' ).indexOf( className ) >= 0
-  },
-
-  _addClass: function( el, className ) {
-    var classList = el.classList
-
-    if( classList ) {
-      classList.add( className )
-    } else {
-      if( this._hasClass( className ) ) return
-  
-      classList = el.className.split( ' ' )
-      classList.push( className )
-      el.className = classList.join( ' ' )
-    }
-  },
-
-  _remClass: function( el, className ) {
-    var classList = el.classList
-  
-    if( classList ) {
-      classList.remove( className )
-    } else {
-      if( !el.hasClass( className ) ) return
-  
-      classList = el.className.split( ' ' )
-      classList.splice( classList.indexOf( className ) )
-      el.className = classList.join( ' ' )
-    }
-  },
-
   _addEvent: function( el, eventName, fn ) {
     var _this = this,
       psRoot, elEvents
@@ -589,7 +553,7 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       el = document.createElement( selector )
 
-    _this._addClass( el, _this._cfg.nameSpace + elClassSuffix )
+    el.classList.add( _this._cfg.nameSpace + elClassSuffix )
     _this._setStyle( el, styleObj )
 
     if( parentEl ) parentEl.appendChild( el )
@@ -784,12 +748,12 @@ Object.assign( PotatoSwiper.prototype, {
     for( ; i < l; i++ ) {
       dot = dotsArr[ i ]
 
-      _this._remClass( dot, activeDotClass )
+      dot.classList.remove( activeDotClass )
 
       if( dot._psPageGoTo <= idx ) active = i
     }
 
-    _this._addClass( dotsArr[ active ], activeDotClass )
+    dotsArr[ active ].classList.add( activeDotClass )
   },
 
   _setRaf: function( fn ) {

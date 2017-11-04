@@ -15,6 +15,77 @@
     }
   }
 
+  if( !( 'classList' in Element.prototype ) ) {
+
+    var ClassList = function( el ) {
+      this.element = el
+
+      var arr = el.className.split( ' ' ),
+        i = 0, l = arr.length
+
+      for( ; i < l; i++ ) {
+        this[i] = arr[i]
+      }
+    }
+
+    Object.assign( ClassList.prototype, {
+
+      contains: function( className ) {
+        return this.element.className.split( ' ' ).indexOf( className ) >= 0
+      },
+
+      add: function( className ) {
+        var _this = this,
+          el = _this.element,
+          classArr = el.className.split( ' ' )
+        
+        if( _this.contains( className ) ) return
+        
+        classArr.push( className )
+        el.className = classArr.join( ' ' )
+      },
+      
+      remove: function( className ) {
+        var _this = this,
+          el = _this.element,
+          classArr = el.className.split( ' ' )
+        
+        if( !_this.contains( className ) ) return
+
+        classArr.splice( classArr.indexOf( className ) )
+        el.className = classArr.join( ' ' )
+      },
+
+      toggle: function( className ) {
+        var _this = this
+
+        return _this.contains( className ) ?
+          ( _this.remove( className ), false ) :
+          ( _this.add( className ), true )
+      },
+
+      replace: function( removeClass, addClass ) {
+        var _this = this
+
+        _this.remove( removeClass )
+        _this.add( addClass )
+      }
+
+    } )
+
+    Object.defineProperty( ClassList.prototype, 'length', {
+      get: function() {
+        return this.element.className.split( ' ' ).length
+      }
+    } )
+
+    Object.defineProperty( Element.prototype, 'classList', {
+      get: function() {
+        return new ClassList( this )
+      }
+    } )
+  }
+
   if( !Object.keys ) {
     Object.keys = function( obj ) {
       // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )

@@ -15,6 +15,77 @@
     }
   }
 
+  if( !( 'classList' in Element.prototype ) ) {
+
+    var ClassList = function( el ) {
+      this.element = el
+
+      var arr = el.className.split( ' ' ),
+        i = 0, l = arr.length
+
+      for( ; i < l; i++ ) {
+        this[i] = arr[i]
+      }
+    }
+
+    Object.assign( ClassList.prototype, {
+
+      contains: function( className ) {
+        return this.element.className.split( ' ' ).indexOf( className ) >= 0
+      },
+
+      add: function( className ) {
+        var _this = this,
+          el = _this.element,
+          classArr = el.className.split( ' ' )
+        
+        if( _this.contains( className ) ) return
+        
+        classArr.push( className )
+        el.className = classArr.join( ' ' )
+      },
+      
+      remove: function( className ) {
+        var _this = this,
+          el = _this.element,
+          classArr = el.className.split( ' ' )
+        
+        if( !_this.contains( className ) ) return
+
+        classArr.splice( classArr.indexOf( className ) )
+        el.className = classArr.join( ' ' )
+      },
+
+      toggle: function( className ) {
+        var _this = this
+
+        return _this.contains( className ) ?
+          ( _this.remove( className ), false ) :
+          ( _this.add( className ), true )
+      },
+
+      replace: function( removeClass, addClass ) {
+        var _this = this
+
+        _this.remove( removeClass )
+        _this.add( addClass )
+      }
+
+    } )
+
+    Object.defineProperty( ClassList.prototype, 'length', {
+      get: function() {
+        return this.element.className.split( ' ' ).length
+      }
+    } )
+
+    Object.defineProperty( Element.prototype, 'classList', {
+      get: function() {
+        return new ClassList( this )
+      }
+    } )
+  }
+
   if( !Object.keys ) {
     Object.keys = function( obj ) {
       // if( obj !== Object( obj ) ) throw new TypeError( 'Object.keys called on a non-object' )
@@ -455,7 +526,7 @@ Object.assign( PotatoSwiper.prototype, {
 
   _cloneItems: function( allW ) {
     var _this = this,
-      cloneItem = _this._cloneItem.bind( this ),
+      cloneItem = _this._cloneItem,
       psItems = _this._psItems,
       psItemsArr = _this._psItemsArr,
       psItem, clonesW,
@@ -490,7 +561,7 @@ Object.assign( PotatoSwiper.prototype, {
   _cloneItem: function( item ) {
     var cloneItem = item.cloneNode( true )
 
-    this._addClass( cloneItem, item.getAttribute( 'class' ) + '--clone' )
+    cloneItem.classList.add( item.getAttribute( 'class' ) + '--clone' )
 
     return cloneItem
   },
@@ -623,42 +694,6 @@ Object.assign( PotatoSwiper.prototype, {
     this.init()
   },
 
-  _hasClass: function( el, className ) {  
-    var classList = el.classList
-
-    return classList ?
-      classList.contains( className ) :
-      el.className.split( ' ' ).indexOf( className ) >= 0
-  },
-
-  _addClass: function( el, className ) {
-    var classList = el.classList
-
-    if( classList ) {
-      classList.add( className )
-    } else {
-      if( this._hasClass( className ) ) return
-  
-      classList = el.className.split( ' ' )
-      classList.push( className )
-      el.className = classList.join( ' ' )
-    }
-  },
-
-  _remClass: function( el, className ) {
-    var classList = el.classList
-  
-    if( classList ) {
-      classList.remove( className )
-    } else {
-      if( !el.hasClass( className ) ) return
-  
-      classList = el.className.split( ' ' )
-      classList.splice( classList.indexOf( className ) )
-      el.className = classList.join( ' ' )
-    }
-  },
-
   _addEvent: function( el, eventName, fn ) {
     var _this = this,
       psRoot, elEvents
@@ -704,7 +739,7 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       el = document.createElement( selector )
 
-    _this._addClass( el, _this._cfg.nameSpace + elClassSuffix )
+    el.classList.add( _this._cfg.nameSpace + elClassSuffix )
     _this._setStyle( el, styleObj )
 
     if( parentEl ) parentEl.appendChild( el )
@@ -899,12 +934,12 @@ Object.assign( PotatoSwiper.prototype, {
     for( ; i < l; i++ ) {
       dot = dotsArr[ i ]
 
-      _this._remClass( dot, activeDotClass )
+      dot.classList.remove( activeDotClass )
 
       if( dot._psPageGoTo <= idx ) active = i
     }
 
-    _this._addClass( dotsArr[ active ], activeDotClass )
+    dotsArr[ active ].classList.add( activeDotClass )
   },
 
   _setRaf: function( fn ) {
