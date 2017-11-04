@@ -116,7 +116,7 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       mainCfg = _this._mainCfg,
       cfg, rwdCfg = {}, rwdArr = [],
-      bodyW = _this._getEl( 'body' ).offsetWidth,
+      winW = window.innerWidth,
       i = 0, m
 
     if( mainCfg.rwd ) {
@@ -125,13 +125,13 @@ Object.assign( PotatoSwiper.prototype, {
 
       for( ; i <= m; i++ ) {
         if( mainCfg.rwdMobileFirst ) {
-          if( rwdArr[ i ] <= bodyW ) {
+          if( rwdArr[ i ] <= winW ) {
             rwdCfg = mainCfg.rwd[ rwdArr[ i ] ]
           } else {
             break
           }
         } else {
-          if( rwdArr[ m - i ] >= bodyW ) {
+          if( rwdArr[ m - i ] >= winW ) {
             rwdCfg = mainCfg.rwd[ rwdArr[ m - i ] ]
           } else {
             break
