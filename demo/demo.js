@@ -8,7 +8,7 @@ function ready(fn) {
 
 ready( function() {
 
-  window['psSlider'] = new PotatoSwiper( document.querySelectorAll( '.slider__items' ), {
+  var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--basic' ), {
     loop: true,
     prevSelector: '.slider__nav--prev',
     nextSelector: '.slider__nav--next',
@@ -27,6 +27,29 @@ ready( function() {
       },
       960: {
         items: 4
+      }
+    }
+  } )
+
+  var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--perItem' ), {
+    loop: true,
+    prevSelector: '.slider__nav--prev',
+    nextSelector: '.slider__nav--next',
+    gap: 20,
+    items: 1,
+    perItem: 1,
+    largeSelector: '.slider__item--large',
+    rwd: {
+      420: {
+        items: 2
+      },
+      640: {
+        items: 3,
+        perItem: 2,
+      },
+      960: {
+        items: 4,
+        perItem: 2,
       }
     }
   } )

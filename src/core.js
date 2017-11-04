@@ -1,7 +1,7 @@
 /**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-10-31
+ * Version: 2017-11-04
  */
 
 var PotatoSwiper = function( rootEl, cfg ) {
@@ -62,19 +62,17 @@ Object.assign( PotatoSwiper.prototype, {
       largeSize: 2,
       largeSelector: '[data-ps-large]',
       duration: 500, // ms
+      threshold: 20,
       easing: 'easeOutCubic',
       rwdMobileFirst: true,
       rwd: {}
     }, cfg )
     _this._cfg = {}
 
-    _this._threshold = 20
-
     _this._currIdx = 0
     _this._allIdx = 0
     _this._maxIdx = 0
 
-    _this._firstL = 0
     _this._loopW = 0
     _this._currItemX = 0
     _this._psX = 0
@@ -257,7 +255,6 @@ Object.assign( PotatoSwiper.prototype, {
 
     rootEl.appendChild( psRoot )
 
-    _this._firstL = psItemsArr[ 0 ]._psItemL
     _this._loopW = allW
     if( cfg.loop ) allW = _this._cloneItems( allW )
 
@@ -350,8 +347,6 @@ Object.assign( PotatoSwiper.prototype, {
       psItem._psItemL = getElL( psItem )
       psItem._psItemX = psItem._psItemL - firstL
     }
-
-    _this._firstL = firstL
   },
 
   _bindEvents: function() {
@@ -566,14 +561,15 @@ Object.assign( PotatoSwiper.prototype, {
       psItemsArr = _this._psItemsArr,
       psItems = _this._psItems,
       rootStyle = _this._rootEl.style,
-      threshold = _this._threshold,
+      threshold = _this._cfg.threshold,
       moveD = _this._move.d,
       loopW = _this._loopW,
       // loopCfg = _this._cfg.loop,
       i = 1, l = psItemsArr.length,
-      diffA, diffB, diffX,
+      diffA, diffB, diffX = 0,
       currItemsL, currItemsX,
-      modX, closestIdx = null
+      modX, closestIdx = 0,
+      halfGap = _this._cfg.gap / 2
 
     _this._move.b = null
     _this._move.d = 0
@@ -583,28 +579,40 @@ Object.assign( PotatoSwiper.prototype, {
 
     if( moveD > threshold || moveD < -threshold ) {
       modX = _this._currItemX - ( _this._psD + moveD )
-      modX = ( modX % loopW + loopW ) % loopW
+      modX = ( modX % loopW + loopW ) % loopW + halfGap
       
       for( ; i <= l; i++ ) {
-        diffA = modX - psItemsArr[ i - 1 ]._psItemX
+        diffA = modX - psItemsArr[ i - 1 ]._psItemX 
         diffB = i !== l ? modX - psItemsArr[ i ]._psItemX : modX - loopW
 
         if( diffA > 0 && diffB < 0 ) {
-          if( diffA < -diffB ) {
+
+          if( moveD > 0 ) {
             closestIdx = i - 1
             diffX = diffA
           } else {
             closestIdx = i
             diffX = diffB
           }
+
+          // // real closest
+          // if( diffA < -diffB ) {
+          //   closestIdx = i - 1
+          //   diffX = diffA
+          // } else {
+          //   closestIdx = i
+          //   diffX = diffB
+          // }
+          
           closestIdx %= l
           break
         }
       }
 
+      
       currItemsL = -psItemsArr[ closestIdx ]._psItemL
       currItemsX = psItemsArr[ closestIdx ]._psItemX
-      _this._psD = -diffX
+      _this._psD = halfGap - diffX
 
       _this._setStyle( psItems, {
         left: currItemsL + 'px'

@@ -61,7 +61,7 @@ button {
 /* debug */
 /* .potatoSwiper__item--clone > .slider__item { background-color: #333; } */
 
-.slider__item::after {
+.slider__item::before {
   content: '';
   display: inline-block;
   vertical-align: middle;
@@ -69,6 +69,10 @@ button {
   height: 100%;
   min-height: 240px;
   visibility: hidden;
+}
+
+@media only screen and (min-width: 640px) {
+  .slider__item--large::before { min-height: 480px; }
 }
 
 .slider__text {
