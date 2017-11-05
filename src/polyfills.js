@@ -74,9 +74,9 @@
         elPrototype.msMatchesSelector ||
         function( selector ) {
           var matches = document.querySelectorAll( selector ),
-            mi, ml = matches.length
+            mi = 0, ml = matches.length
 
-          for( mi = 0; mi < ml; mi++ ) {
+          for( ; mi < ml; mi++ ) {
             if( matches[ mi ] === this ) return true
           }
 
@@ -84,6 +84,23 @@
         }
     } )()
   }
+
+  // if( !Element.prototype.closest ) {
+  //   Element.prototype.closest = function( selector ) {
+  //     var el = this, matches = document.querySelectorAll( selector ),
+  //       mi, ml = matches.length
+  
+  //     for( ; el; el = el.parentElement ) {
+  //       for( mi = 0; mi < ml; mi++ ) {
+  //         if( matches[ mi ] === el ) {
+  //           return el
+  //         }
+  //       }
+  //     }
+  
+  //     return null
+  //   }
+  // }
 
   if( !( 'classList' in Element.prototype ) ) {
 

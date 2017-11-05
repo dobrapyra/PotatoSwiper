@@ -74,9 +74,9 @@
         elPrototype.msMatchesSelector ||
         function( selector ) {
           var matches = document.querySelectorAll( selector ),
-            mi, ml = matches.length
+            mi = 0, ml = matches.length
 
-          for( mi = 0; mi < ml; mi++ ) {
+          for( ; mi < ml; mi++ ) {
             if( matches[ mi ] === this ) return true
           }
 
@@ -84,6 +84,23 @@
         }
     } )()
   }
+
+  // if( !Element.prototype.closest ) {
+  //   Element.prototype.closest = function( selector ) {
+  //     var el = this, matches = document.querySelectorAll( selector ),
+  //       mi, ml = matches.length
+  
+  //     for( ; el; el = el.parentElement ) {
+  //       for( mi = 0; mi < ml; mi++ ) {
+  //         if( matches[ mi ] === el ) {
+  //           return el
+  //         }
+  //       }
+  //     }
+  
+  //     return null
+  //   }
+  // }
 
   if( !( 'classList' in Element.prototype ) ) {
 
@@ -187,7 +204,7 @@
 /**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-11-04
+ * Version: 2017-11-05
  */
 
 var PotatoSwiper = function( rootEl, cfg ) {
@@ -241,17 +258,19 @@ Object.assign( PotatoSwiper.prototype, {
       items: 1,
       perItem: 1,
       autoWidth: false,
-      scopeEl: rootEl.parentElement,
-      prevSelector: '[data-ps-prev]',
-      nextSelector: '[data-ps-next]',
-      dotSelector: '[data-ps-dot]',
       gap: 0, // px
       largeSize: 2,
-      largeSelector: '[data-ps-large]',
       duration: 500, // ms
       threshold: 20, // px
       easing: 'easeOutCubic',
       rwdMobileFirst: true,
+      scopeEl: rootEl.parentElement,
+      selector: {
+        prev: '[data-ps-prev]',
+        next: '[data-ps-next]',
+        dot: '[data-ps-dot]',
+        large: '[data-ps-large]'
+      },
       class: {},
       rwd: {}
     }, cfg )
@@ -472,10 +491,10 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       cfg = _this._cfg,
       psItemsArr = _this._psItemsArr,
-      i = 0, l = psItemsArr.length,
+      i = 0, l = _this._allIdx,
       psItemW, pageW, page = 0,
       wrapGapW = _this._getElW( _this._psWrap ) + cfg.gap,
-      dot, dotsEl, dotTpl = _this._getEl( cfg.dotSelector, cfg.scopeEl )
+      dot, dotsEl, dotTpl = _this._getEl( cfg.selector.dot, cfg.scopeEl )
     
     _this._dotsArr = []
     if( dotTpl ) {
@@ -514,14 +533,15 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       getEl = _this._getEl,
       cfg = _this._cfg,
-      scopeEl = cfg.scopeEl
+      scopeEl = cfg.scopeEl,
+      selectorCfg = cfg.selector
 
-    _this._navPrev = getEl( cfg.prevSelector, scopeEl )
-    _this._navNext = getEl( cfg.nextSelector, scopeEl )
+    _this._navPrev = getEl( selectorCfg.prev, scopeEl )
+    _this._navNext = getEl( selectorCfg.next, scopeEl )
   },
 
   _isLarge: function( itemEl ) {
-    return itemEl.matches( this._cfg.largeSelector )
+    return itemEl.matches( this._cfg.selector.large )
   },
 
   _cloneItems: function( allW ) {
@@ -531,7 +551,7 @@ Object.assign( PotatoSwiper.prototype, {
       psItemsArr = _this._psItemsArr,
       psItem, clonesW,
       wrapW = _this._getElW( _this._psWrap ),
-      i, l = psItemsArr.length
+      i, l = _this._allIdx
 
     // after
     i = 0
@@ -570,7 +590,7 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       psItemsArr = _this._psItemsArr,
       getElL = _this._getElL,
-      i = 0, l = psItemsArr.length,
+      i = 0, l = _this._allIdx,
       firstL = getElL( psItemsArr[ 0 ] ),
       psItem
 
@@ -783,15 +803,17 @@ Object.assign( PotatoSwiper.prototype, {
       psItemsArr = _this._psItemsArr,
       psItems = _this._psItems,
       rootStyle = _this._rootEl.style,
-      threshold = _this._cfg.threshold,
       moveD = _this._move.d,
       loopW = _this._loopW,
-      // loopCfg = _this._cfg.loop,
-      i = 1, l = psItemsArr.length,
+      maxIdx = _this._maxIdx,
+      i = 1, l = _this._allIdx,
       diffA, diffB, diffX = 0,
       currItemsL, currItemsX,
-      modX, closestIdx = 0,
-      halfGap = _this._cfg.gap / 2
+      tmpX, modX, closestIdx = null,
+      cfg = _this._cfg,
+      threshold = cfg.threshold,
+      halfGap = cfg.gap / 2,
+      loopCfg = cfg.loop
 
     _this._move.b = null
     _this._move.d = 0
@@ -800,37 +822,31 @@ Object.assign( PotatoSwiper.prototype, {
     rootStyle.pointerEvents = ''
 
     if( moveD > threshold || moveD < -threshold ) {
-      modX = _this._currItemX - ( _this._psD + moveD )
-      modX = ( modX % loopW + loopW ) % loopW + halfGap
+      modX = tmpX = _this._currItemX - ( _this._psD + moveD )
+      modX = ( loopCfg ? ( ( modX % loopW + loopW ) % loopW ) : modX ) + halfGap
 
       for( ; i <= l; i++ ) {
+        if( !loopCfg && i === l ) break
+  
         diffA = modX - psItemsArr[ i - 1 ]._psItemX
         diffB = i !== l ? modX - psItemsArr[ i ]._psItemX : modX - loopW
 
         if( diffA > 0 && diffB < 0 ) {
 
-          if( moveD > 0 ) {
-            closestIdx = i - 1
-            diffX = diffA
-          } else {
-            closestIdx = i
-            diffX = diffB
-          }
-
+          closestIdx = moveD > 0 ? ( diffX = diffA, i - 1 ) : ( diffX = diffB, i )
+          
           // // real closest
-          // if( diffA < -diffB ) {
-          //   closestIdx = i - 1
-          //   diffX = diffA
-          // } else {
-          //   closestIdx = i
-          //   diffX = diffB
-          // }
+          // closestIdx = diffA < -diffB ? ( diffX = diffA, i - 1 ) : ( diffX = diffB, i )
 
           closestIdx %= l
           break
         }
-      }
 
+        if( !closestIdx ) { 
+          closestIdx = moveD > 0 ? 0 : maxIdx
+          diffX = moveD > 0 ? tmpX : tmpX - psItemsArr[ maxIdx ]._psItemX
+        }
+      }
 
       currItemsL = -psItemsArr[ closestIdx ]._psItemL
       currItemsX = psItemsArr[ closestIdx ]._psItemX
@@ -858,8 +874,10 @@ Object.assign( PotatoSwiper.prototype, {
       loopW = _this._loopW,
       currItemX = _this._currItemX
 
-    x = ( ( x % loopW + loopW ) % loopW - currItemX ) % loopW + currItemX
-    x = ( x > currItemX ) ? x - loopW : x
+    if( _this._cfg.loop ) {
+      x = ( ( x % loopW + loopW ) % loopW - currItemX ) % loopW + currItemX
+      x = ( x > currItemX ) ? x - loopW : x
+    }
 
     _this._psX = x
     _this._psItems.style.transform = 'matrix(1,0,0,1,' + x + ',0)'
@@ -974,13 +992,17 @@ Object.assign( PotatoSwiper.prototype, {
       psItems = _this._psItems,
       allIdx = _this._allIdx,
       maxIdx = _this._maxIdx,
-      loopCfg = _this._cfg.loop,
       loopW = _this._loopW,
-      modIdx, loops, currItemsL = 0
+      modIdx, loops, currItemsL = 0,
+      cfg = _this._cfg,
+      loopCfg = cfg.loop
 
     if( targetIdx === _this._currIdx ) return
 
     modIdx = loopCfg ? ( ( targetIdx % allIdx + allIdx ) % allIdx ) : ( targetIdx > maxIdx ) ? maxIdx : ( targetIdx < 0 ) ? 0 : targetIdx
+    
+    if( !loopCfg && modIdx === _this._currIdx ) return
+
     loops = ( targetIdx - modIdx ) / allIdx
 
     currItemsL = -psItemsArr[ modIdx ]._psItemL
@@ -990,7 +1012,7 @@ Object.assign( PotatoSwiper.prototype, {
     _this._setStyle( psItems, {
       left: currItemsL + 'px'
     } )
-    _this._animPos( _this._cfg.duration )
+    _this._animPos( cfg.duration )
 
     _this._setCurrIdx( modIdx )
     _this._currItemX = _this._psItemsArr[ modIdx ]._psItemX

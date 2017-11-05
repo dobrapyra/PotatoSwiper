@@ -24,9 +24,11 @@
 <code class="language-javascript">
 var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--basic' ), {
   loop: true,
-  prevSelector: '.slider__nav--prev',
-  nextSelector: '.slider__nav--next',
-  dotSelector: '.slider__dot',
+  selector: {
+    prev: '.slider__nav--prev',
+    next: '.slider__nav--next',
+    dot: '.slider__dot'
+  },
   class: {
     activeDot: 'slider__dot--active'
   },
@@ -87,21 +89,91 @@ var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items-
 
         </div>
 
+        <h2>No Loop with RWD</h2>
+
+        <pre>
+<code class="language-javascript">
+var noLoopSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--noLoop' ), {
+  loop: false,
+  selector: {
+    prev: '.slider__nav--prev',
+    next: '.slider__nav--next',
+    dot: '.slider__dot'
+  },
+  class: {
+    activeDot: 'slider__dot--active'
+  },
+  gap: 15,
+  items: 1,
+  rwd: {
+    520: {
+      items: 2
+    },
+    960: {
+      items: 3
+    }
+  }
+} )
+</code>
+        </pre>
+
+        <div class="slider">
+
+          <div class="slider__items slider__items--noLoop">
+            <div class="slider__item slider__item--c1">
+              <div class="slider__text">Slide 1</div>
+            </div>
+            <div class="slider__item slider__item--c2">
+              <div class="slider__text">Slide 2</div>
+            </div>
+            <div class="slider__item slider__item--c3">
+              <div class="slider__text">Slide 3</div>
+            </div>
+            <div class="slider__item slider__item--c4">
+              <div class="slider__text">Slide 4</div>
+            </div>
+            <div class="slider__item slider__item--c5">
+              <div class="slider__text">Slide 5</div>
+            </div>
+            <div class="slider__item slider__item--c6">
+              <div class="slider__text">Slide 6</div>
+            </div>
+            <div class="slider__item slider__item--c7">
+              <div class="slider__text">Slide 7</div>
+            </div>
+            <div class="slider__item slider__item--c8">
+              <div class="slider__text">Slide 8</div>
+            </div>
+          </div>
+
+          <div class="slider__navs">
+            <button class="slider__nav slider__nav--prev">prev</button>
+            <button class="slider__nav slider__nav--next">next</button>
+          </div>
+
+          <div class="slider__dots">
+            <button class="slider__dot">{{#}}</button>
+          </div>
+
+        </div>
+
         <h2>Multiple perItem with large and RWD</h2>
 
         <pre>
 <code class="language-javascript">
 var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--perItem' ), {
   loop: true,
-  prevSelector: '.slider__nav--prev',
-  nextSelector: '.slider__nav--next',
-  dotSelector: '.slider__dot',
+  selector: {
+    prev: '.slider__nav--prev',
+    next: '.slider__nav--next',
+    dot: '.slider__dot',
+    large: '.slider__item--large'
+  },
   class: {
     activeDot: 'slider__dot--active'
   },
   items: 1,
   perItem: 1,
-  largeSelector: '.slider__item--large',
   rwd: {
     420: {
       items: 2

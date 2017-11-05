@@ -10,16 +10,14 @@ ready( function() {
 
   var basicSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--basic' ), {
     loop: true,
-    prevSelector: '.slider__nav--prev',
-    nextSelector: '.slider__nav--next',
-    dotSelector: '.slider__dot',
+    selector: {
+      prev: '.slider__nav--prev',
+      next: '.slider__nav--next',
+      dot: '.slider__dot'
+    },
     class: {
       activeDot: 'slider__dot--active'
     },
-    // autoWidth: true
-    // items: 3,
-    // perItem: 2
-    // duration: 2000,
     gap: 20,
     items: 1,
     rwd: {
@@ -35,17 +33,41 @@ ready( function() {
     }
   } )
 
+  var noLoopSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--noLoop' ), {
+    loop: false,
+    selector: {
+      prev: '.slider__nav--prev',
+      next: '.slider__nav--next',
+      dot: '.slider__dot'
+    },
+    class: {
+      activeDot: 'slider__dot--active'
+    },
+    gap: 15,
+    items: 1,
+    rwd: {
+      520: {
+        items: 2
+      },
+      960: {
+        items: 3
+      }
+    }
+  } )
+
   var multiPerItemSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--perItem' ), {
     loop: true,
-    prevSelector: '.slider__nav--prev',
-    nextSelector: '.slider__nav--next',
-    dotSelector: '.slider__dot',
+    selector: {
+      prev: '.slider__nav--prev',
+      next: '.slider__nav--next',
+      dot: '.slider__dot',
+      large: '.slider__item--large'
+    },
     class: {
       activeDot: 'slider__dot--active'
     },
     items: 1,
     perItem: 1,
-    largeSelector: '.slider__item--large',
     rwd: {
       420: {
         items: 2
@@ -60,5 +82,9 @@ ready( function() {
       }
     }
   } )
+
+  window['basicSwipers'] = basicSwipers
+  window['noLoopSwipers'] = noLoopSwipers
+  window['multiPerItemSwipers'] = multiPerItemSwipers
 
 } )
