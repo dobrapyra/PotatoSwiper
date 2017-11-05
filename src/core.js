@@ -73,6 +73,8 @@ Object.assign( PotatoSwiper.prototype, {
     }, cfg )
     _this._cfg = {}
 
+    _this._inited = false
+
     _this._currIdx = 0
     _this._allIdx = 0
     _this._maxIdx = 0
@@ -99,7 +101,10 @@ Object.assign( PotatoSwiper.prototype, {
       e: 0 // end
     }
 
-    if( _this._mainCfg.autoInit ) _this.init()
+    if( _this._mainCfg.autoInit ) {
+      _this.init()
+      setTimeout( function() { _this.refresh() }, 0 ) // mibile winW fix
+    }
   },
 
   _getItemsArr: function( rootEl ) {
@@ -161,6 +166,7 @@ Object.assign( PotatoSwiper.prototype, {
     _this._prepareHtml()
     _this._prepareDots()
     _this._bindEvents()
+    _this._inited = true
   },
 
   _prepareHtml: function() {
@@ -500,29 +506,32 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       remEvent = _this._remEvent.bind( _this ),
       doc = document
-
+    
     remEvent( doc, 'touchmove' )
-
+    
     remEvent( doc, 'touchend' )
   },
-
+  
   refresh: function() {
-    this.destroy()
-    this.init()
+    var _this = this
+    
+    if( !_this._inited ) return
+    _this.destroy()
+    _this.init()
   },
 
   _addEvent: function( el, eventName, fn ) {
     var _this = this,
-      psRoot, elEvents
+      psRoot = _this._psRoot,
+      elEvents
 
     if( el === window || el === document ) {
-      psRoot = _this._psRoot
       elEvents = psRoot._psEvents = psRoot._psEvents || {}
     } else {
       elEvents = el._psEvents = el._psEvents || {}
     }
 
-    if( elEvents[ eventName ] ) this._remEvent( el, eventName )
+    if( elEvents[ eventName ] ) _this._remEvent( el, eventName )
 
     elEvents[ eventName ] = fn
 
@@ -531,13 +540,12 @@ Object.assign( PotatoSwiper.prototype, {
 
   _remEvent: function( el, eventName ) {
     var _this = this,
-      elEvents
-
-    elEvents = ( el === window || el === document ) ? _this._psRoot._psEvents : el._psEvents
+      elEvents = ( el === window || el === document ) ? _this._psRoot._psEvents : el._psEvents
 
     if( !elEvents || !elEvents[ eventName ] ) return
 
     el.removeEventListener( eventName, elEvents[ eventName ] )
+    delete elEvents[ eventName ]
   },
 
   _getEl: function( selector, scopeEl ) {
@@ -610,7 +618,8 @@ Object.assign( PotatoSwiper.prototype, {
       cfg = _this._cfg,
       threshold = cfg.threshold,
       halfGap = cfg.gap / 2,
-      loopCfg = cfg.loop
+      loopCfg = cfg.loop,
+      duration = cfg.duration
 
     _this._move.b = null
     _this._move.d = 0
@@ -652,7 +661,7 @@ Object.assign( PotatoSwiper.prototype, {
       _this._setStyle( psItems, {
         left: currItemsL + 'px'
       } )
-      _this._animPos( _this._cfg.duration )
+      _this._animPos( duration )
 
       _this._setCurrIdx( closestIdx )
       _this._currItemX = currItemsX
@@ -661,8 +670,9 @@ Object.assign( PotatoSwiper.prototype, {
       //   _this._lastTarget.click()
       //   _this._lastTarget = null
       // }
+      if( !moveD ) return // mobile sometimes not unbind event error bypass
       _this._psD = _this._psX
-      _this._animPos( _this._cfg.duration )
+      _this._animPos( duration )
     }
   },
 
@@ -779,7 +789,6 @@ Object.assign( PotatoSwiper.prototype, {
   goBy: function( offset ) {
     var _this = this
 
-    _this._psD = _this._psX
     _this.goTo( _this._currIdx + offset )
   },
 
@@ -846,6 +855,7 @@ Object.assign( PotatoSwiper.prototype, {
     _this._unbindEvents()
     _this._restoreDots()
     _this._restoreHtml()
+    _this._inited = false
   }
 
 } )
