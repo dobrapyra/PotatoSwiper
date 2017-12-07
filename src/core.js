@@ -1,7 +1,7 @@
 /**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-11-05
+ * Version: 2017-12-07
  */
 
 var PotatoSwiper = function( rootEl, cfg ) {
@@ -180,6 +180,8 @@ Object.assign( PotatoSwiper.prototype, {
       i = 0, l = itemsArr.length,
       itemEl, psItem,
       itemElW, psItemW,
+      psItemStyle,
+      psItemMargin,
       rootW, allW = 0,
       itemsCount = 0,
       itemSize,
@@ -222,15 +224,19 @@ Object.assign( PotatoSwiper.prototype, {
       }
 
       if( itemsCount % cfg.perItem === 0 ) {
-        psItem = createEl( 'div', '__item', {
+
+        psItemStyle = {
           position: 'relative',
           display: 'inline-block',
           verticalAlign: 'middle',
           top: 0,
           left: 0,
           width: ( psItemW - gap ) + 'px',
-          marginRight: gap + 'px'
-        }, psItems )
+        }
+        psItemMargin = 'marginRight'
+        psItemStyle[psItemMargin] = gap + 'px'
+
+        psItem = createEl( 'div', '__item', psItemStyle, psItems )
 
         psItemsArr.push( psItem )
         psItem._psItemSize = 0
@@ -444,9 +450,9 @@ Object.assign( PotatoSwiper.prototype, {
     var _this = this,
       remEvent = _this._remEvent.bind( _this )
 
-    remEvent( _this._navPrev, 'click' )
+    if( _this._navPrev ) remEvent( _this._navPrev, 'click' )
 
-    remEvent( _this._navNext, 'click' )
+    if( _this._navNext ) remEvent( _this._navNext, 'click' )
 
     remEvent( _this._psItems, 'mousedown' )
 
@@ -756,6 +762,8 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._currIdx = idx
 
+    if( l <= 0 ) return
+
     for( ; i < l; i++ ) {
       dot = dotsArr[ i ]
 
@@ -827,6 +835,8 @@ Object.assign( PotatoSwiper.prototype, {
   _restoreDots: function() {
     var _this = this,
       dotsEl = _this._dotsEl
+
+    if( !dotsEl ) return
 
     dotsEl.innerHTML = ''
     dotsEl.appendChild( _this._dotTpl.cloneNode( true ) )

@@ -83,8 +83,26 @@ ready( function() {
     }
   } )
 
+  var noControlsSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--noControls' ), {
+    loop: true,
+    gap: 20,
+    items: 1,
+    rwd: {
+      420: {
+        items: 2
+      },
+      640: {
+        items: 3
+      },
+      960: {
+        items: 4
+      }
+    }
+  } )
+
   window['basicSwipers'] = basicSwipers
   window['noLoopSwipers'] = noLoopSwipers
   window['multiPerItemSwipers'] = multiPerItemSwipers
+  window['noControlsSwipers'] = noControlsSwipers
 
 } )
