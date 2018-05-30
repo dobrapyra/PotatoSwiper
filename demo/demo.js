@@ -100,6 +100,39 @@ ready( function() {
     }
   } )
 
+  var handlersSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__items--handlers' ), {
+    loop: true,
+    selector: {
+      prev: '.slider__nav--prev',
+      next: '.slider__nav--next',
+      dot: '.slider__dot'
+    },
+    class: {
+      activeDot: 'slider__dot--active'
+    },
+    gap: 20,
+    items: 1,
+    rwd: {
+      420: {
+        items: 2
+      },
+      640: {
+        items: 3
+      },
+      960: {
+        items: 4
+      }
+    },
+    handlers: {
+      onChange: function( index ){ console.log('change '+index) },
+      onChanged: function( index ){ console.log('changed '+index) },
+      onDragStart: function( x ){ console.log('drag start '+x) },
+      onDragMove: function( x ){ console.log('drag move '+x) },
+      onDragEnd: function( x ){ console.log('drag end '+x) },
+      onInited: function(){ console.log('inited') }
+    }
+  } )
+
   window['basicSwipers'] = basicSwipers
   window['noLoopSwipers'] = noLoopSwipers
   window['multiPerItemSwipers'] = multiPerItemSwipers

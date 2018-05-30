@@ -47,6 +47,8 @@ Object.assign( PotatoSwiper.prototype, {
     _this._rootEl = rootEl
     _this._itemsArr = _this._getItemsArr( rootEl )
 
+    var noop = function() {}
+
     // default config
     _this._mainCfg = Object.assign( {
       nameSpace: 'potatoSwiper',
@@ -69,7 +71,15 @@ Object.assign( PotatoSwiper.prototype, {
         large: '[data-ps-large]'
       },
       class: {},
-      rwd: {}
+      rwd: {},
+      handlers: {
+        onChange: noop,
+        onChanged: noop,
+        onDragStart: noop,
+        onDragMove: noop,
+        onDragEnd: noop,
+        onInited: noop
+      }
     }, cfg )
     _this._cfg = {}
 
@@ -167,6 +177,7 @@ Object.assign( PotatoSwiper.prototype, {
     _this._prepareDots()
     _this._bindEvents()
     _this._inited = true
+    _this._cfg.handlers.onInited()
   },
 
   _prepareHtml: function() {
@@ -590,12 +601,15 @@ Object.assign( PotatoSwiper.prototype, {
     _this._stopLoop()
 
     // _this._lastTarget = e.target.closest( 'a[href], button' )
-
-    _this._move.b = touch ? touch.clientX : e.clientX
+    var x = touch ? touch.clientX : e.clientX
+    _this._move.b = x
     _this._psD = _this._psX
 
     rootStyle.userSelect = 'none'
     rootStyle.pointerEvents = 'none'
+
+    _this._cfg.handlers.onChange( _this._currIdx )
+    _this._cfg.handlers.onDragStart( x )
   },
 
   _moveUpdate: function( e ) {
@@ -604,9 +618,12 @@ Object.assign( PotatoSwiper.prototype, {
 
     if( _this._move.b === null ) return
 
-    _this._move.d = touch ? touch.clientX - _this._move.b : e.clientX - _this._move.b
+    var x = touch ? touch.clientX : e.clientX
+    _this._move.d = x - _this._move.b
 
     _this._updatePos( _this._psD + _this._move.d )
+
+    _this._cfg.handlers.onDragMove( x )
   },
 
   _moveEnd: function() {
@@ -626,6 +643,9 @@ Object.assign( PotatoSwiper.prototype, {
       halfGap = cfg.gap / 2,
       loopCfg = cfg.loop,
       duration = cfg.duration
+
+    var x = _this._move.d + _this._move.b
+    _this._cfg.handlers.onDragEnd( x )
 
     _this._move.b = null
     _this._move.d = 0
@@ -742,6 +762,8 @@ Object.assign( PotatoSwiper.prototype, {
 
     if( t > time.e ) { // complete
       _this._stopLoop()
+
+      _this._cfg.handlers.onChanged( _this._currIdx )
     }
 
     fract = ( t - time.b ) / time.d
@@ -830,6 +852,8 @@ Object.assign( PotatoSwiper.prototype, {
 
     _this._setCurrIdx( modIdx )
     _this._currItemX = _this._psItemsArr[ modIdx ]._psItemX
+
+    _this._cfg.handlers.onChange( _this._currIdx )
   },
 
   _restoreDots: function() {
