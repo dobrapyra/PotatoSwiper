@@ -204,7 +204,7 @@
 /**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-12-07
+ * Version: 2018-06-04
  */
 
 var PotatoSwiper = function( rootEl, cfg ) {
@@ -282,7 +282,10 @@ Object.assign( PotatoSwiper.prototype, {
         onDragStart: noop,
         onDragMove: noop,
         onDragEnd: noop,
-        onInited: noop
+        onInit: noop,
+        onInited: noop,
+        onDestroy: noop,
+        onDestroyed: noop
       }, cfg.handlers )
     } )
     _this._cfg = {}
@@ -377,11 +380,12 @@ Object.assign( PotatoSwiper.prototype, {
   init: function() {
     var _this = this
 
+    _this._cfg.handlers.onInit(_this._currIdx)
     _this._prepareHtml()
     _this._prepareDots()
     _this._bindEvents()
     _this._inited = true
-    _this._cfg.handlers.onInited()
+    _this._cfg.handlers.onInited(_this._currIdx)
   },
 
   _prepareHtml: function() {
@@ -1090,10 +1094,12 @@ Object.assign( PotatoSwiper.prototype, {
   destroy: function() {
     var _this = this
 
+    _this._cfg.handlers.onDestroy(_this._currIdx)
     _this._unbindEvents()
     _this._restoreDots()
     _this._restoreHtml()
     _this._inited = false
+    _this._cfg.handlers.onDestroyed(_this._currIdx)
   }
 
 } )
