@@ -1,4 +1,4 @@
-/*!
+/**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
  * Version: 2018-06-04
