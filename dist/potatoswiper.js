@@ -274,16 +274,17 @@ Object.assign( PotatoSwiper.prototype, {
         large: '[data-ps-large]'
       },
       class: {},
-      rwd: {},
-      handlers: {
+      rwd: {}
+    }, cfg, {
+      handlers: Object.assign( {
         onChange: noop,
         onChanged: noop,
         onDragStart: noop,
         onDragMove: noop,
         onDragEnd: noop,
         onInited: noop
-      }
-    }, cfg )
+      }, cfg.handlers )
+    } )
     _this._cfg = {}
 
     _this._inited = false
@@ -591,7 +592,7 @@ Object.assign( PotatoSwiper.prototype, {
     i = -1
     clonesW = 0
     while( clonesW < wrapW ) {
-      psItem = psItemsArr[ ( i + l ) % l ]
+      psItem = psItemsArr[ ( ( ( i + l ) % l ) + l ) % l ]
       clonesW += psItem._psItemW
       psItems.insertBefore( cloneItem( psItem ), psItems.children[ 0 ] )
       i--
@@ -811,7 +812,7 @@ Object.assign( PotatoSwiper.prototype, {
     rootStyle.userSelect = 'none'
     rootStyle.pointerEvents = 'none'
 
-    _this._cfg.handlers.onChange( _this._currIdx )
+    // _this._cfg.handlers.onChange( _this._currIdx )
     _this._cfg.handlers.onDragStart( x )
   },
 
