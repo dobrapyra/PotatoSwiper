@@ -204,7 +204,7 @@
 /**
  * PotatoSwiper Core
  * Author: dobrapyra (Michał Zieliński)
- * Version: 2017-11-05
+ * Version: 2017-12-07
  */
 
 var PotatoSwiper = function( rootEl, cfg ) {
@@ -580,7 +580,7 @@ Object.assign( PotatoSwiper.prototype, {
     i = -1
     clonesW = 0
     while( clonesW < wrapW ) {
-      psItem = psItemsArr[ ( i + l ) % l ]
+      psItem = psItemsArr[ ( ( i % l ) + l ) % l ]
       clonesW += psItem._psItemW
       psItems.insertBefore( cloneItem( psItem ), psItems.children[ 0 ] )
       i--

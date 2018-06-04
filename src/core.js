@@ -377,7 +377,7 @@ Object.assign( PotatoSwiper.prototype, {
     i = -1
     clonesW = 0
     while( clonesW < wrapW ) {
-      psItem = psItemsArr[ ( i + l ) % l ]
+      psItem = psItemsArr[ ( ( i % l ) + l ) % l ]
       clonesW += psItem._psItemW
       psItems.insertBefore( cloneItem( psItem ), psItems.children[ 0 ] )
       i--
