@@ -300,6 +300,7 @@ var noControlsSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__i
       activeDot: 'slider__dot--active'
     },
     gap: 20,
+    padding: 60,
     items: 1,
     rwd: {
       420: {
@@ -318,7 +319,10 @@ var noControlsSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__i
       onDragStart: function( x ){ console.log('drag start '+x) },
       onDragMove: function( x ){ console.log('drag move '+x) },
       onDragEnd: function( x ){ console.log('drag end '+x) },
-      onInited: function(){ console.log('inited') }
+      onInit: function( index ){ console.log('init '+index) },
+      onInited: function( index ){ console.log('inited '+index) },
+      onDestroy: function( index ){ console.log('destroy '+index) },
+      onDestroyed: function( index ){ console.log('destroyed '+index) }
     }
   } )
 </code>
@@ -381,6 +385,7 @@ var noControlsSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__i
   dotSelector: '[data-ps-dot]',
   class: {},
   gap: 0, // px
+  padding: 0, // px
   largeSize: 2,
   largeSelector: '[data-ps-large]',
   duration: 500, // ms
@@ -394,7 +399,10 @@ var noControlsSwipers = new PotatoSwiper( document.querySelectorAll( '.slider__i
     onDragStart: function( x ){},
     onDragMove: function( x ){},
     onDragEnd: function( x ){},
-    onInited: function(){}
+    onInit: function( index ){},
+    onInited: function( index ){},
+    onDestroy: function( index ){},
+    onDestroyed: function( index ){}
   }
 }
 </code>

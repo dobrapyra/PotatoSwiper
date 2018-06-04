@@ -111,6 +111,7 @@ ready( function() {
       activeDot: 'slider__dot--active'
     },
     gap: 20,
+    padding: 60,
     items: 1,
     rwd: {
       420: {

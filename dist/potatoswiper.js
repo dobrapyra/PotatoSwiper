@@ -261,6 +261,7 @@ Object.assign( PotatoSwiper.prototype, {
       perItem: 1,
       autoWidth: false,
       gap: 0, // px
+      padding: 0, // px
       largeSize: 2,
       duration: 500, // ms
       threshold: 20, // px
@@ -390,7 +391,7 @@ Object.assign( PotatoSwiper.prototype, {
 
   _prepareHtml: function() {
     var _this = this,
-      cfg, gap,
+      cfg, gap, padding,
       getElW = _this._getElW,
       setStyle = _this._setStyle,
       createEl = _this._createEl.bind( _this ),
@@ -401,7 +402,7 @@ Object.assign( PotatoSwiper.prototype, {
       itemElW, psItemW,
       psItemStyle,
       psItemMargin,
-      rootW, allW = 0,
+      rootW, wrapW, allW = 0,
       itemsCount = 0,
       itemSize,
       psRoot, psWrap, psItems, psItemsArr
@@ -415,16 +416,19 @@ Object.assign( PotatoSwiper.prototype, {
 
     cfg = _this._setRWDCfg()
     gap = cfg.gap
+    padding = cfg.padding
 
     rootW = getElW( rootEl )
+    wrapW = rootW - ( 2 * padding )
 
     psRoot = createEl( 'div', '', {
-      position: 'relative'
+      position: 'relative',
+      overflow: 'hidden'
     } )
 
     psWrap = createEl( 'div', '__wrap', {
       position: 'relative',
-      overflow: 'hidden'
+      margin: '0 ' + padding + 'px'
     }, psRoot )
 
     psItems = createEl( 'div', '__items', {
@@ -438,7 +442,7 @@ Object.assign( PotatoSwiper.prototype, {
         psItemW = getElW( itemEl )
         itemElW = '100%'
       } else {
-        psItemW = Math.floor( ( rootW + gap ) * 100 / cfg.items ) / 100
+        psItemW = Math.floor( ( wrapW + gap ) * 100 / cfg.items ) / 100
         itemElW = ''
       }
 
@@ -578,13 +582,13 @@ Object.assign( PotatoSwiper.prototype, {
       psItems = _this._psItems,
       psItemsArr = _this._psItemsArr,
       psItem, clonesW,
-      wrapW = _this._getElW( _this._psWrap ),
+      rootW = _this._getElW( _this._psRoot ),
       i, l = _this._allIdx
 
     // after
     i = 0
     clonesW = 0
-    while( clonesW < wrapW ) {
+    while( clonesW < rootW ) {
       psItem = psItemsArr[ i % l ]
       clonesW += psItem._psItemW
       psItems.appendChild( cloneItem( psItem ) )
@@ -595,7 +599,7 @@ Object.assign( PotatoSwiper.prototype, {
     // before
     i = -1
     clonesW = 0
-    while( clonesW < wrapW ) {
+    while( clonesW < rootW ) {
       psItem = psItemsArr[ ( ( ( i + l ) % l ) + l ) % l ]
       clonesW += psItem._psItemW
       psItems.insertBefore( cloneItem( psItem ), psItems.children[ 0 ] )
