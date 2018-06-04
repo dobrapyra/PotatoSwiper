@@ -129,7 +129,10 @@ ready( function() {
       onDragStart: function( x ){ console.log('drag start '+x) },
       onDragMove: function( x ){ console.log('drag move '+x) },
       onDragEnd: function( x ){ console.log('drag end '+x) },
-      onInited: function(){ console.log('inited') }
+      onInit: function( index ){ console.log('init '+index) },
+      onInited: function( index ){ console.log('inited '+index) },
+      onDestroy: function( index ){ console.log('destroy '+index) },
+      onDestroyed: function( index ){ console.log('destroyed '+index) }
     }
   } )
 
@@ -137,5 +140,6 @@ ready( function() {
   window['noLoopSwipers'] = noLoopSwipers
   window['multiPerItemSwipers'] = multiPerItemSwipers
   window['noControlsSwipers'] = noControlsSwipers
+  window['handlersSwipers'] = handlersSwipers
 
 } )

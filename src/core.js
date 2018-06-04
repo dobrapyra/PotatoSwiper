@@ -177,7 +177,7 @@ Object.assign( PotatoSwiper.prototype, {
   init: function() {
     var _this = this
 
-    _this._cfg.handlers.onInit(_this._currIdx)
+    _this._mainCfg.handlers.onInit(_this._currIdx)
     _this._prepareHtml()
     _this._prepareDots()
     _this._bindEvents()
